@@ -224,15 +224,12 @@ double BTerrainBlock::HeightAt(int nX, int nY, bool bIgnore) {
 BVector BTerrainBlock::GetNormalAtTile(int nX, int nY, int nRes) {
   // Returns the normal at the given resolution-specific point
   // Normal is the average of the neighboring normals:
-  //
   //   Y
-  //
   //   ^
   //   | A  B  C
   //   | D  xy E
   //   | F  G  H
   //   +---------> X
-  //
 
   BVector vToA, vToB, vToC, vToD, vToE, vToF, vToG, vToH;
   BVector vNormal(0, 0, 0);

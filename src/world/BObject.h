@@ -1,4 +1,3 @@
-//
 // Object
 
 #pragma once

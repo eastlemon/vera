@@ -1,4 +1,3 @@
-//
 // Bare core classes for the Vera
 
 #pragma once

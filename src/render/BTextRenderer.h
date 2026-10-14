@@ -1,4 +1,3 @@
-//
 // BTextRenderer: Misc text rendering routines
 
 #pragma once

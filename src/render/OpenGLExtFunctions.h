@@ -1,4 +1,3 @@
-//
 // OpenGL extension functions
 
 #pragma once

@@ -47,21 +47,18 @@ double g_dPhysicsStepsInSecond = 200.0; // Was 200.0
 bool g_bControl = false;
 bool g_bShift = false;
 
-//
 // CVeraView
 
+// ON_WM_CREATE()
+// ON_WM_ERASEBKGND()
+// ON_WM_DESTROY()
+// ON_WM_CHAR()
+// ON_WM_KEYDOWN()
+// ON_WM_KEYUP()
+// ON_WM_MOUSEMOVE()
+// ON_WM_LBUTTONDOWN()
+// ON_WM_LBUTTONUP()
 
-/*ON_WM_CREATE()
-ON_WM_ERASEBKGND()
-ON_WM_DESTROY()
-ON_WM_CHAR()
-ON_WM_KEYDOWN()
-ON_WM_KEYUP()
-ON_WM_MOUSEMOVE()
-ON_WM_LBUTTONDOWN()
-ON_WM_LBUTTONUP()*/
-
-//
 // CVeraView construction/destruction
 
 CVeraView::CVeraView() {
@@ -4143,34 +4140,14 @@ void CVeraView::DrawPanel(double dWidth, double dHeight, double dRed,
   glEnd();
 }
 
-//
 // CVeraView drawing
 
-// void CVeraView::OnDraw(CDC* pDC) {
 void CVeraView::OnDraw() {
   if (m_pDrawFunction) {
-    // Call active draw function
-    //(this->*m_pDrawFunction)(pDC);
     (this->*m_pDrawFunction)();
   }
 }
 
-//
-// CVeraView diagnostics
-
-/*void CVeraView::AssertValid() const
-{
-CView::AssertValid();
-}
-
-void CVeraView::Dump(CDumpContext& dc) const
-{
-CView::Dump(dc);
-}
-
-//#endif //_DEBUG*/
-
-//
 // CVeraView message handlers
 
 void CVeraView::OnChar(int nChar, int nRepCnt, int nFlags) {

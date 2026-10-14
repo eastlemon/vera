@@ -1,4 +1,3 @@
-//
 // VeraView.h : interface of the CVeraView class
 
 #if !defined(AFX_VeraVIEW_H__73E6FC07_BC82_11D4_B532_0060B0F1F5DD__INCLUDED_)
@@ -208,8 +207,6 @@ public:
 
   bool isExit() { return exit; }
 };
-
-//
 
 //{{AFX_INSERT_LOCATION}}
 // the previous line.

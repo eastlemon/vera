@@ -1,4 +1,3 @@
-//
 // Camera
 
 #pragma once

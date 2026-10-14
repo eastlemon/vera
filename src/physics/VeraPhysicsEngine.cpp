@@ -535,26 +535,7 @@ double PPEC_BBaseVehicle::BreakProfile(double dFrictionFactor) {
   }
 }
 
-
-
-
-
-
-
-
-
-
-// 
-// START OF PUBLIC INTERFACE
-// 
-
-
-
-
-
-
-
-
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ START OF PUBLIC INTERFACE
 
 // GLOBAL STUFF 
 const int          g_cnMaxVehicles = 100;

@@ -1,4 +1,3 @@
-//
 // BCmdModule: Internal command interface to control gameplay
 
 #pragma once

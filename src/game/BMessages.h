@@ -1,4 +1,3 @@
-//
 // BMessages: Show on-screen messages
 
 #pragma once

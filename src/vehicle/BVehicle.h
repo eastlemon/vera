@@ -1,4 +1,3 @@
-//
 // Vehicle
 
 #pragma once

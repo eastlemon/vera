@@ -1,4 +1,3 @@
-//
 // BMenu: start menu components
 
 #pragma once
