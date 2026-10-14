@@ -5,10 +5,19 @@ After the legacy cleanup the source tree is organised by responsibility:
 ```
 src/
 ├── app/           Entry point + main view
-│   ├── main.cpp            SDL bootstrap, event loop
-│   ├── VeraView.{h,cpp}    The main "view" — owns BGame + BMessages,
-│   │                       dispatches input + draws each frame
-│   └── SDLHelpers.h        Small SDL helpers (font loading, rects, colors)
+│   ├── main.cpp                SDL bootstrap, event loop
+│   ├── VeraView.{h,cpp}        The main "view" class — declaration + skeleton:
+│   │                            ctor/dtor, OnCreate, InitializeOpenGL, OnDraw, lifecycle
+│   ├── VeraView_Menu.cpp       Menu rendering & menu input handlers
+│   │                            (OnDrawCurrentMenu, DrawMenu, ReturnPressedOnCurrentMenu,
+│   │                             CancelPressedOnCurrentMenu, OnKeyDownCurrentMenu, ...)
+│   ├── VeraView_Game.cpp       In-game frame: OnDrawGame + all Draw* HUD methods
+│   │                            (DrawDashboard, DrawNavSat, DrawServiceWnd,
+│   │                             DrawPickupInfo, DrawDeliveryInfo, DrawPanel, ...)
+│   ├── VeraView_Input.cpp      Keyboard/mouse/touch dispatch + dialog helpers
+│   │                            (OnKeyDown, OnKeyUp, OnChar, OnMouseMove,
+│   │                             OnLButtonDown, OnFingerDown, HandleBUITouch, ...)
+│   └── SDLHelpers.h            Small SDL helpers (font loading, rects, colors)
 │
 ├── game/          Game-state layer
 │   ├── BGame.{h,cpp}       Static "control center": singletons, menus, weather
@@ -106,12 +115,13 @@ xattr -dr com.apple.quarantine ./Vera
 
 ## What's still on the TODO list
 
-1. **Split `src/app/VeraView.cpp`** (6 000+ lines) into `VeraView_Menu.cpp`,
-   `VeraView_HUD.cpp`, `VeraView_Dispatch.cpp`.
-2. Replace the hand-rolled SDL_audio mixer in `src/audio/SoundModule.cpp`
+1. Replace the hand-rolled SDL_audio mixer in `src/audio/SoundModule.cpp`
    with SDL_mixer (~50 lines instead of 376).
-3. Modernise the OpenGL renderer from fixed-function (`glBegin/glEnd`,
+2. Modernise the OpenGL renderer from fixed-function (`glBegin/glEnd`,
    display lists) to GLSL 3.3 core profile — needed for Metal compatibility
    on modern macOS.
-4. Re-implement joystick support via SDL2's game-controller API
+3. Re-implement joystick support via SDL2's game-controller API
    (`ControllerModule::SwitchToController` / `GetValueFromRaw` are stubs).
+4. The dead AVI video subsystem (`flipIt`/`GrabAVIFrame`/`CloseAVI`/`InitVideo`
+   in `src/app/VeraView.cpp`) is still compiled in but never called — should
+   be deleted in a future cleanup pass.

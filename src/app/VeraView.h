@@ -191,8 +191,19 @@ public:
 
   void drawDialogs();
 
-  template <typename D> vector<Dialog *>::iterator getFirstDialogOfType();
-  template <typename D> bool isDialogOpen();
+  template <typename D> vector<Dialog *>::iterator getFirstDialogOfType() {
+    vector<Dialog *>::iterator i;
+    for (i = dialogs.begin(); i != dialogs.end(); i++) {
+      if (dynamic_cast<D>(*i)) {
+        break;
+      }
+    }
+    return i;
+  }
+
+  template <typename D> bool isDialogOpen() {
+    return getFirstDialogOfType<D>() != dialogs.end();
+  }
 
   void drawSurface(double x1, double y1, double x2, double y2, GLenum format,
                    SDL_Surface *surface);

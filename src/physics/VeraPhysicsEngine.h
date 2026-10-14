@@ -1,10 +1,12 @@
 // Vera Physics Engine Core
+//
 // NOTE: This is the developer version and works for approx. 5 minutes.
 // After that the vehicle simply stops.
 
 #pragma once
 
 #include "CoreClasses.h"
+
 
 // Base class for vehicle body point
 class BBodyPoint {

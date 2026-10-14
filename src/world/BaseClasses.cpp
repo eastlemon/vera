@@ -202,7 +202,9 @@ void BPart::AppendWaveFrontOBJShape(string sShapeFilename, int &rnVertices,
                                     int &rnFaces, bool bUseMassCenter,
                                     bool bReadTexCoords, bool bSplitQuads) {
   // Load in the WaveFront model file
-  // Relevant tags in the beginning of the lines
+  //
+  // Relevant tags in the beginning of the lines:
+  //
   //    v   = vertex
   //    vt  = texture coordinate
   //    f   = face

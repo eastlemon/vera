@@ -1,3 +1,4 @@
+//
 // BSceneEditor: Simple scene editor
 
 #pragma once
