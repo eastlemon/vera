@@ -1,0 +1,22 @@
+# Build artifacts
+/build
+/build_macos
+/Vera
+/Vera.log
+/Vera.html
+/Vera.data
+/Vera.js
+/Vera.wasm
+
+# Per-user state (generated at runtime)
+/Player.state
+/settings.dat
+/*_TerrainCache.dat
+/*_TerrainCache2.dat
+
+# OS / IDE noise
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~

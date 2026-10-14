@@ -1,0 +1,15 @@
+Vera Game
+
+-------------------------------------------
+
+cd ~/vera
+
+rm -rf build_macos Vera
+
+make -f Makefile.macos
+
+./Vera
+
+-------------------------------------------
+
+git rm -r --cached название_каталога/

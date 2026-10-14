@@ -1,0 +1,47 @@
+# Makefile.macos - build Vera on macOS with Homebrew-installed SDL2
+#
+# Prerequisites:
+#   xcode-select --install
+#   brew install sdl2 sdl2_ttf sdl2_image libvorbis pkg-config
+#
+# Build:   make -f Makefile.macos
+# Run:     ./Vera
+# Clean:   make -f Makefile.macos clean
+
+UNAME_S := $(shell uname -s)
+
+CXX      ?= clang++
+CXXFLAGS ?= -std=c++11 -O2 -g \
+            -Wall -Wno-unused -Wno-write-strings \
+            -Wno-deprecated-declarations -Wno-sign-compare \
+            $(shell pkg-config --cflags sdl2 sdl2_ttf sdl2_image vorbisfile 2>/dev/null)
+LDFLAGS  ?= $(shell pkg-config --libs sdl2 sdl2_ttf sdl2_image vorbisfile 2>/dev/null) \
+            -framework OpenGL
+
+# Source layout (mirror of Makefile).
+SUBDIRS := app game world vehicle render ui ui/dialogs audio platform physics
+SRC_DIRS := $(addprefix src/,$(SUBDIRS))
+
+SOURCES := $(shell find src -name '*.cpp')
+OBJECTS := $(patsubst src/%.cpp,build/%.o,$(SOURCES))
+
+INCLUDES := $(addprefix -I,$(SRC_DIRS)) -Isrc
+
+EXECUTABLE := Vera
+
+.PHONY: all clean run
+
+all: $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
+
+build/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+run: $(EXECUTABLE)
+	./$(EXECUTABLE)
+
+clean:
+	rm -rf build $(EXECUTABLE)

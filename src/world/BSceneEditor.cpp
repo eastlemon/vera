@@ -1,0 +1,581 @@
+// BSceneEditor: Simple scene editor
+#include "BSceneEditor.h"
+#include "BCamera.h"
+#include "BGame.h"
+#include "BObject.h"
+#include "BScene.h"
+#include "BSimulation.h"
+#include "BTextures.h"
+#include "VeraView.h"
+
+BSceneEditor::BSceneEditor() {
+  m_bSceneModified = false;
+  BGame::m_bSceneEditorMode = false;
+  m_phase = BASIC;
+  m_nAllObjects = 0;
+  m_sActiveObject = "";
+
+  m_sObjectTypes[0] = "Base";
+  m_sObjectTypes[1] = "Client";
+  m_sObjectTypes[2] = "Other";
+  m_sObjectShadows[0] = "no shadow";
+  m_sObjectShadows[1] = "convex shadow";
+  m_sOverwrite[0] = "overwrite existing scene file";
+  m_sOverwrite[1] = "cancel save";
+  m_sellistObjectType.SetItems(m_sObjectTypes, 3);
+  m_sellistObjectType.SelectItem("Other");
+  m_sellistObjectShadow.SetItems(m_sObjectShadows, 2);
+  m_sellistObjectShadow.SelectItem("convex shadow");
+  m_sellistOverwrite.SetItems(m_sOverwrite, 2);
+  m_sellistOverwrite.SelectItem("cancel save");
+}
+
+bool BSceneEditor::IsActive() { return BGame::m_bSceneEditorMode; }
+
+void BSceneEditor::Activate() {
+  m_bSceneModified = false;
+  BGame::m_bSceneEditorMode = true;
+
+  // Setup camera for editor mode
+  BCamera *pCamera = BGame::GetSimulation()->GetCamera();
+  pCamera->m_orientation.m_vForward.m_dZ = 0.0;
+  pCamera->m_orientation.m_vForward.ToUnitLength();
+  pCamera->m_orientation.m_vUp = BVector(0, 0, -1);
+  pCamera->m_orientation.m_vRight = pCamera->m_orientation.m_vUp.CrossProduct(
+      pCamera->m_orientation.m_vForward);
+}
+
+void BSceneEditor::Deactivate() {
+  // Check for save!
+  BGame::m_bSceneEditorMode = false;
+}
+
+// void BSceneEditor::Draw(CRect &rectWnd) {
+void BSceneEditor::Draw(SDL_Rect &rectWnd) {
+
+  // Always draw the "Scene Editor Mode" indicator
+  OpenGLHelpers::SwitchToTexture(0);
+  // BTextures::Use(BTextures::Texture::PANEL);
+  BTextures::Use(BTextures::PANEL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  double dAlpha = fabs(double(SDL_GetTicks() % 1000) - 500.0) / 500.0;
+  OpenGLHelpers::SetColorFull(dAlpha / 2, dAlpha / 2, 1, 1);
+  glPushMatrix();
+  // glTranslated(30, rectWnd.Height() - 70.0, 0);
+  glTranslated(30, rectWnd.h - 70.0, 0);
+
+  glBegin(GL_TRIANGLE_STRIP);
+  OpenGLHelpers::SetTexCoord(255.0 / 512.0, (512.0 - 32.0) / 512.0);
+  glVertex3f(0, 0, 0);
+  OpenGLHelpers::SetTexCoord(255.0 / 512.0, (512.0 - 0.0) / 512.0);
+  glVertex3f(0, 33.0, 0);
+  OpenGLHelpers::SetTexCoord(485.0 / 512.0, (512.0 - 32.0) / 512.0);
+  glVertex3f(231.0, 0, 0);
+  OpenGLHelpers::SetTexCoord(485.0 / 512.0, (512.0 - 0.0) / 512.0);
+  glVertex3f(231.0, 33.0, 0);
+  glEnd();
+
+  glPopMatrix();
+
+  // Phase-specific stuff
+  switch (m_phase) {
+  case SELECTING_SCENE_OBJECT:
+    OpenGLHelpers::DrawVeil(0, 0, 0.25, 0.5, rectWnd);
+    // BGame::GetSimulation()->GetScene()->m_sellistSceneObjects.DrawAt(rectWnd.Width()
+    // / 2.0,
+    BGame::GetSimulation()->GetScene()->m_sellistSceneObjects.DrawAt(
+        rectWnd.w / 2.0,
+        // rectWnd.Height() / 2.0,
+        rectWnd.h / 2.0,
+        // BTextRenderer::TTextAlign::ALIGN_CENTER);
+        BTextRenderer::ALIGN_CENTER);
+    break;
+  case SELECTING_SCENE_OBJECT_TO_DELETE:
+    OpenGLHelpers::DrawVeil(0.25, 0, 0, 0.5, rectWnd);
+    // BGame::GetSimulation()->GetScene()->m_sellistSceneObjects.DrawAt(rectWnd.Width()
+    // / 2.0,
+    BGame::GetSimulation()->GetScene()->m_sellistSceneObjects.DrawAt(
+        rectWnd.w / 2.0,
+        // rectWnd.Height() / 2.0,
+        rectWnd.h / 2.0,
+        // BTextRenderer::TTextAlign::ALIGN_CENTER);
+        BTextRenderer::ALIGN_CENTER);
+    break;
+  case ASKING_OBJECT_NAME:
+  case ASKING_SCENE_DISPLAY_NAME:
+  case ASKING_SCENE_FILENAME:
+    OpenGLHelpers::DrawVeil(0, 0, 0.25, 0.5, rectWnd);
+    // m_edit.DrawAt(rectWnd.Width() / 2.0,
+    m_edit.DrawAt(rectWnd.w / 2.0,
+                  // rectWnd.Height() / 2.0,
+                  rectWnd.h / 2.0, true);
+    break;
+  case SELECTING_OBJECT_TYPE:
+    OpenGLHelpers::DrawVeil(0, 0, 0.25, 0.5, rectWnd);
+    // m_sellistObjectType.DrawAt(rectWnd.Width() / 2.0,
+    m_sellistObjectType.DrawAt(rectWnd.w / 2.0,
+                               // rectWnd.Height() / 2.0,
+                               rectWnd.h / 2.0,
+                               // BTextRenderer::TTextAlign::ALIGN_CENTER);
+                               BTextRenderer::ALIGN_CENTER);
+    break;
+  case SELECTING_OBJECT_SHADOW:
+    OpenGLHelpers::DrawVeil(0, 0, 0.25, 0.5, rectWnd);
+    // m_sellistObjectShadow.DrawAt(rectWnd.Width() / 2.0,
+    m_sellistObjectShadow.DrawAt(rectWnd.w / 2.0,
+                                 // rectWnd.Height() / 2.0,
+                                 rectWnd.h / 2.0,
+                                 // BTextRenderer::TTextAlign::ALIGN_CENTER);
+                                 BTextRenderer::ALIGN_CENTER);
+    break;
+  case SELECTING_OBJECT_FILE:
+    OpenGLHelpers::DrawVeil(0, 0, 0.25, 0.5, rectWnd);
+    // m_sellistAllObjects.DrawAt(rectWnd.Width() / 2.0,
+    m_sellistAllObjects.DrawAt(rectWnd.w / 2.0,
+                               // rectWnd.Height() / 2.0,
+                               rectWnd.h / 2.0,
+                               // BTextRenderer::TTextAlign::ALIGN_CENTER);
+                               BTextRenderer::ALIGN_CENTER);
+    break;
+  case OVERWRITE_SCENE_FILE_QUESTION:
+    OpenGLHelpers::DrawVeil(0, 0, 0.25, 0.5, rectWnd);
+    // m_sellistOverwrite.DrawAt(rectWnd.Width() / 2.0,
+    m_sellistOverwrite.DrawAt(rectWnd.w / 2.0,
+                              // rectWnd.Height() / 2.0,
+                              rectWnd.h / 2.0,
+                              // BTextRenderer::TTextAlign::ALIGN_CENTER);
+                              BTextRenderer::ALIGN_CENTER);
+    break;
+  case BASIC:
+    break;
+  case MOVING_OBJECT:
+    break;
+  }
+
+  // Draw active object name
+
+  OpenGLHelpers::SwitchToTexture(0);
+  // BTextures::Use(BTextures::Texture::PANEL);
+  BTextures::Use(BTextures::PANEL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  glPushMatrix();
+  // glTranslated(30, rectWnd.Height() - 70.0, 0);
+  glTranslated(30, rectWnd.h - 70.0, 0);
+
+  double dColor = 1.0;
+  if ((m_phase == BASIC) || (m_phase == MOVING_OBJECT)) {
+    dColor = 0.0;
+  }
+
+  // if(!m_sActiveObject.IsEmpty()) {
+  if (!m_sActiveObject.empty()) {
+    string sText;
+    sText = "ACTIVE OBJECT:" + m_sActiveObject;
+    // BUI::TextRenderer()->DrawTextAt(0, -40, sText,
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -40, sText, BTextRenderer::ALIGN_LEFT,
+                                    dColor, dColor, dColor);
+  }
+
+  switch (m_phase) {
+  case SELECTING_SCENE_OBJECT:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Select scene object",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Select scene object",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case SELECTING_SCENE_OBJECT_TO_DELETE:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Select object to be deleted",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, 1, 0, 0);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Select object to be deleted",
+                                    BTextRenderer::ALIGN_LEFT, 1, 0, 0);
+    break;
+  case ASKING_OBJECT_NAME:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Enter object name",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Enter object name",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case ASKING_SCENE_DISPLAY_NAME:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Enter scene display name",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Enter scene display name",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case ASKING_SCENE_FILENAME:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Enter scene filename",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Enter scene filename",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case SELECTING_OBJECT_TYPE:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Select object type",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Select object type",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case SELECTING_OBJECT_SHADOW:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Select object shadow",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Select object shadow",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case SELECTING_OBJECT_FILE:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Select object file",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Select object file",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case BASIC:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Camera mode",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Camera mode",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case MOVING_OBJECT:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Place object",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Place object",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  case OVERWRITE_SCENE_FILE_QUESTION:
+    // BUI::TextRenderer()->DrawTextAt(0, -15, "Confirm file overwrite",
+    // BTextRenderer::TTextAlign::ALIGN_LEFT, dColor, dColor, dColor);
+    BUI::TextRenderer()->DrawTextAt(0, -15, "Confirm file overwrite",
+                                    BTextRenderer::ALIGN_LEFT, dColor, dColor,
+                                    dColor);
+    break;
+  }
+  glPopMatrix();
+}
+
+void BSceneEditor::CancelPhase() { m_phase = BASIC; }
+
+void BSceneEditor::AdvancePhase() {
+  BScene *pScene = BGame::GetSimulation()->GetScene();
+  switch (BGame::GetSceneEditor()->m_phase) {
+  case ASKING_SCENE_DISPLAY_NAME:
+    m_phase = ASKING_SCENE_FILENAME;
+    // Ask for scene file name
+    {
+      BUIEdit::TStatus statusEdit;
+      pScene->m_sName = m_edit.GetValue(statusEdit);
+      m_edit.Setup("Scene filename:", pScene->m_sFilename, 32);
+    }
+    break;
+  case ASKING_SCENE_FILENAME:
+    m_phase = BASIC;
+    {
+      BUIEdit::TStatus statusEdit;
+      pScene->m_sFilename = m_edit.GetValue(statusEdit);
+
+      // if((pScene->m_sFilename.GetLength() < 1) ||
+      if ((pScene->m_sFilename.length() < 1) ||
+          (pScene->m_sFilename[0] != '.')) {
+        pScene->m_sFilename = "./" + pScene->m_sFilename;
+      }
+
+      // Check for file overwrite
+      FILE *fp;
+      // fp = fopen(pScene->m_sFilename, "r");
+      fp = fopen(pScene->m_sFilename.c_str(), "r");
+      if (fp) {
+        m_phase = OVERWRITE_SCENE_FILE_QUESTION;
+        BUI::StartUsingSelectionList(
+            &(BGame::GetSceneEditor()->m_sellistOverwrite),
+            &CVeraView::OnKeyDownSceneEditor);
+      } else {
+        // Save scene
+        pScene->Save();
+      }
+    }
+    break;
+  case OVERWRITE_SCENE_FILE_QUESTION:
+    m_phase = BASIC;
+    {
+      string sTmp = "";
+      m_sellistOverwrite.GetSelectedItem(sTmp);
+      // if(sTmp.CompareNoCase("overwrite existing scene file") == 0) {
+      if (sTmp.compare("overwrite existing scene file") == 0) {
+        // Save scene
+        pScene->Save();
+      }
+    }
+    break;
+  case ASKING_OBJECT_NAME:
+    m_phase = SELECTING_OBJECT_TYPE;
+    BUIEdit::TStatus statusEdit;
+    m_sActiveObject = m_edit.GetValue(statusEdit);
+    // Load all object files into the object file list
+    FetchAllObjects();
+    break;
+  case SELECTING_OBJECT_TYPE:
+    m_sellistObjectType.GetSelectedItem(m_sObjectType);
+    m_phase = SELECTING_OBJECT_SHADOW;
+    BUI::StartUsingSelectionList(
+        &(BGame::GetSceneEditor()->m_sellistObjectShadow),
+        &CVeraView::OnKeyDownSceneEditor);
+    break;
+  case SELECTING_OBJECT_SHADOW:
+    m_sellistObjectShadow.GetSelectedItem(m_sObjectShadow);
+    m_phase = SELECTING_OBJECT_FILE;
+    BUI::StartUsingSelectionList(
+        &(BGame::GetSceneEditor()->m_sellistAllObjects),
+        &CVeraView::OnKeyDownSceneEditor);
+    break;
+  case SELECTING_OBJECT_FILE:
+    // Create a new object and insert that to the scene
+
+    {
+      // ObjectData
+      pScene->m_pObjects[pScene->m_nObjects].SetOBJData(&(pScene->m_OBJData));
+
+      // Name
+      pScene->m_pObjects[pScene->m_nObjects].m_sName = m_sActiveObject;
+
+      // Type
+      // if(m_sObjectType.CompareNoCase("Client") == 0) {
+      if (m_sObjectType.compare("Client") == 0) {
+        // pScene->m_pObjects[pScene->m_nObjects].m_type =
+        // BObject::TType::CLIENT;
+        pScene->m_pObjects[pScene->m_nObjects].m_type = BObject::CLIENT;
+        //} else if(m_sObjectType.CompareNoCase("Base") == 0) {
+      } else if (m_sObjectType.compare("Base") == 0) {
+        // pScene->m_pObjects[pScene->m_nObjects].m_type = BObject::TType::BASE;
+        pScene->m_pObjects[pScene->m_nObjects].m_type = BObject::BASE;
+      } else {
+        // pScene->m_pObjects[pScene->m_nObjects].m_type =
+        // BObject::TType::USER_DEF;
+        pScene->m_pObjects[pScene->m_nObjects].m_type = BObject::USER_DEF;
+      }
+
+      // Object file
+      m_sellistAllObjects.GetSelectedItem(
+          pScene->m_pObjects[pScene->m_nObjects].m_sObjectFilename);
+
+      // Location
+      BCamera *pCamera = BGame::GetSimulation()->GetCamera();
+      pScene->m_pObjects[pScene->m_nObjects].m_vLocation =
+          pCamera->m_vLocation + pCamera->m_orientation.m_vForward * 20.0;
+
+      // Scale
+      pScene->m_pObjects[pScene->m_nObjects].m_dScale = 1.0;
+
+      // ZRotation
+      pScene->m_pObjects[pScene->m_nObjects].m_dZRotation = 0.0;
+
+      // Shadow
+      // pScene->m_pObjects[pScene->m_nObjects].m_bHasShadow =
+      // (m_sObjectShadow.CompareNoCase("no shadow") != 0);
+      pScene->m_pObjects[pScene->m_nObjects].m_bHasShadow =
+          (m_sObjectShadow.compare("no shadow") != 0);
+
+      // Load shape from file
+      pScene->m_pObjects[pScene->m_nObjects].LoadObjectFromFile("", "", true);
+
+      // Prepare OBJ data again
+      pScene->m_OBJData.PrepareWaveFrontModel();
+
+      // Prepare object
+      pScene->m_pObjects[pScene->m_nObjects].Setup();
+      pScene->m_pObjects[pScene->m_nObjects].PreProcessVisualization();
+
+      // Reposition the object so that we don't hit it's bounding sphere
+      pScene->m_pObjects[pScene->m_nObjects].m_vLocation =
+          pCamera->m_vLocation +
+          pCamera->m_orientation.m_vForward *
+              (5.0 + pScene->m_pObjects[pScene->m_nObjects].m_dRadius);
+
+      // Recreate the shadow
+      pScene->m_pObjects[pScene->m_nObjects].RecreateShadow();
+
+      // Add object
+      ++pScene->m_nObjects;
+
+      // Update the selection list for scene objects
+      pScene->UpdateObjectList();
+    }
+
+    m_phase = MOVING_OBJECT;
+    break;
+  case SELECTING_SCENE_OBJECT:
+    // Set active object
+    pScene->m_sellistSceneObjects.GetSelectedItem(m_sActiveObject);
+    m_phase = MOVING_OBJECT;
+    break;
+  case SELECTING_SCENE_OBJECT_TO_DELETE:
+    // Delete active object
+    {
+      string sTmp = "";
+      pScene->m_sellistSceneObjects.GetSelectedItem(sTmp);
+
+      // Delete object
+      for (int i = 0; i < pScene->m_nObjects; ++i) {
+        // if(pScene->m_pObjects[i].m_sName.CompareNoCase(sTmp) == 0) {
+        if (pScene->m_pObjects[i].m_sName.compare(sTmp) == 0) {
+          pScene->m_pObjects[i] = pScene->m_pObjects[pScene->m_nObjects - 1];
+          pScene->m_pObjects[pScene->m_nObjects - 1].m_pCollDetPart = 0;
+          pScene->m_pObjects[pScene->m_nObjects - 1].m_pPart = 0;
+          pScene->m_pObjects[pScene->m_nObjects - 1].m_boundary.m_pHead =
+              0; // This leaks memory but that's life.
+          --(pScene->m_nObjects);
+          pScene->UpdateObjectList();
+          break;
+        }
+      }
+    }
+    m_phase = BASIC;
+    break;
+  case MOVING_OBJECT:
+    m_phase = BASIC;
+    break;
+  }
+}
+
+// void BSceneEditor::RecurseObjectFiles(CString sPath, CString sSubDir) {
+void BSceneEditor::RecurseObjectFiles(string sPath, string sSubDir) {
+  // Iterate all directories and search for *.object files
+  // FIXME
+  /*CFileFind finder;
+
+  // start working for files
+  // build a string with wildcards
+  CString strWildcard(sPath);
+  strWildcard += _T("\\*.object");
+
+  BOOL bWorking = finder.FindFile(strWildcard);
+
+  while(bWorking) {
+    bWorking = finder.FindNextFile();
+
+    // skip . and .. files; otherwise, we'd
+    // recur infinitely!
+    if(finder.IsDots())
+       continue;
+
+    // Add filename to object list
+    m_sAllObjects[m_nAllObjects] = sSubDir + finder.GetFileName();
+    ++m_nAllObjects;
+  }
+
+  finder.Close();
+
+  // Recurse subdirectories
+
+  CString strWildcard2(sPath);
+  strWildcard2 += _T("\\*.*");
+
+  bWorking = finder.FindFile(strWildcard2);
+
+  while(bWorking) {
+    bWorking = finder.FindNextFile();
+
+    // skip . and .. files; otherwise, we'd
+    // recur infinitely!
+    if(finder.IsDots())
+       continue;
+
+    // if it's a directory, recursively search it
+    if(finder.IsDirectory()) {
+       CString sDirPath = finder.GetFilePath();
+       RecurseObjectFiles(sDirPath, sSubDir + finder.GetFileTitle() + "/");
+    }
+  }
+
+  finder.Close();*/
+}
+
+void BSceneEditor::FetchAllObjects() {
+
+  m_nAllObjects = 0;
+  RecurseObjectFiles(".", "./");
+
+  m_sellistAllObjects.SetItems(m_sAllObjects, m_nAllObjects);
+  if (m_nAllObjects) {
+    m_sellistAllObjects.SelectItem(m_sAllObjects[0]);
+  }
+}
+
+BObject *BSceneEditor::GetActiveObject() {
+  // Look for active object from scene
+  BScene *pScene = BGame::GetSimulation()->GetScene();
+  for (int i = 0; i < pScene->m_nObjects; ++i) {
+    // if(pScene->m_pObjects[i].m_sName.CompareNoCase(m_sActiveObject) == 0) {
+    if (pScene->m_pObjects[i].m_sName.compare(m_sActiveObject) == 0) {
+      return &(pScene->m_pObjects[i]);
+    }
+  }
+  return 0;
+}
+
+void BSceneEditor::HighlightActiveObject() {
+  // Draw a glowing sphere around the active object.
+  // Also, if the object is BASE or CLIENT, draw it's active radius.
+  double dAlpha = fabs(double(SDL_GetTicks() % 1000) - 500.0) / 500.0;
+
+  // if(!m_sActiveObject.IsEmpty()) {
+  if (!m_sActiveObject.empty()) {
+    // Find the active object from scene
+    BScene *pScene = BGame::GetSimulation()->GetScene();
+    for (int i = 0; i < pScene->m_nObjects; ++i) {
+      // if(pScene->m_pObjects[i].m_sName.CompareNoCase(m_sActiveObject) == 0) {
+      if (pScene->m_pObjects[i].m_sName.compare(m_sActiveObject) == 0) {
+        // Object found, draw sphere
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+
+        // Draw active radius sphere, if needed
+        // if((pScene->m_pObjects[i].m_type == BObject::TType::BASE) ||
+        if ((pScene->m_pObjects[i].m_type == BObject::BASE) ||
+            //(pScene->m_pObjects[i].m_type == BObject::TType::CLIENT)) {
+            (pScene->m_pObjects[i].m_type == BObject::CLIENT)) {
+          glPushMatrix();
+          OpenGLHelpers::SetColorFull(1, 1, 1, dAlpha);
+          glTranslated(pScene->m_pObjects[i].m_vCenter.m_dX,
+                       pScene->m_pObjects[i].m_vCenter.m_dY,
+                       pScene->m_pObjects[i].m_vCenter.m_dZ);
+
+          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+          GLUquadricObj *pQuad = gluNewQuadric();
+          gluSphere(pQuad, pScene->m_pObjects[i].m_dActiveRadius, 35, 35);
+          gluDeleteQuadric(pQuad);
+          glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+          glPopMatrix();
+        }
+
+        // Draw highlight sphere
+
+        OpenGLHelpers::SetColorFull(0.1 * dAlpha, 0.1 * dAlpha, 0.1 * dAlpha,
+                                    dAlpha);
+
+        glPushMatrix();
+
+        GLUquadricObj *pQuad = gluNewQuadric();
+        glTranslated(pScene->m_pObjects[i].m_vCenter.m_dX,
+                     pScene->m_pObjects[i].m_vCenter.m_dY,
+                     pScene->m_pObjects[i].m_vCenter.m_dZ);
+        gluSphere(pQuad, pScene->m_pObjects[i].m_dRadius, 50, 50);
+
+        glPopMatrix();
+        gluDeleteQuadric(pQuad);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_BLEND);
+
+        break;
+      }
+    }
+  }
+}
