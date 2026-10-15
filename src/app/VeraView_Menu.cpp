@@ -729,7 +729,7 @@ void CVeraView::ReturnPressedOnCurrentMenu() {
       BUI::StartUsingSelectionList(&(BGame::m_pMenuCurrent->m_listMenu), &CVeraView::OnKeyDownCurrentMenu);
       StartMenuScroll(SCROLL_LEFT);
       break;
-    case 3:
+    case 2: // EXIT
       SoundModule::StopMenuMusic();
       setExit();
       break;

@@ -93,6 +93,12 @@ void Renderer2D::useShader() {
 
 void Renderer2D::unuseShader() {
   Shader::unuse();
+  // Restore GL state for the legacy fixed-function renderer.
+  // After shader-based drawing, texture binding and blend state may be
+  // left in a state that breaks subsequent glBegin/glEnd calls.
+  glDisable(GL_BLEND);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glEnable(GL_TEXTURE_2D);
 }
 
 glm::mat4 Renderer2D::currentModelview() const {

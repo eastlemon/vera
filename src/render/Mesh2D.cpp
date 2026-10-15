@@ -57,12 +57,16 @@ void Mesh2D::setColor(const glm::vec4 &color) { m_color = color; }
 
 void Mesh2D::uploadQuad(float x0, float y0, float x1, float y1,
                         float u0, float v0, float u1, float v1) {
-  // Counter-clockwise: bottom-left, top-left, bottom-right, top-right.
+  // In screen-space coordinates Y increases downward (y0 = top, y1 = bottom).
+  // OpenGL texture V=0 is the bottom of the texture, V=1 is the top.
+  // To display textures right-side-up, we swap v0/v1 so that:
+  //   top of screen (y0) → v1 (top of texture)
+  //   bottom of screen (y1) → v0 (bottom of texture)
   Vertex2D verts[4] = {
-    { x0, y0, u0, v0, m_color.r, m_color.g, m_color.b, m_color.a }, // 0: BL
-    { x0, y1, u0, v1, m_color.r, m_color.g, m_color.b, m_color.a }, // 1: TL
-    { x1, y0, u1, v0, m_color.r, m_color.g, m_color.b, m_color.a }, // 2: BR
-    { x1, y1, u1, v1, m_color.r, m_color.g, m_color.b, m_color.a }, // 3: TR
+    { x0, y0, u0, v1, m_color.r, m_color.g, m_color.b, m_color.a }, // 0: top-left
+    { x0, y1, u0, v0, m_color.r, m_color.g, m_color.b, m_color.a }, // 1: bottom-left
+    { x1, y0, u1, v1, m_color.r, m_color.g, m_color.b, m_color.a }, // 2: top-right
+    { x1, y1, u1, v0, m_color.r, m_color.g, m_color.b, m_color.a }, // 3: bottom-right
   };
 
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);

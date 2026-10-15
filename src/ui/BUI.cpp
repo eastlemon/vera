@@ -5,7 +5,6 @@
 #include "BGame.h"
 #include "BSimulation.h"
 #include "BTextRenderer.h"
-#include "Renderer2D.h"
 #include "VeraView.h"
 #include <SDL2/SDL.h>
 
@@ -126,49 +125,36 @@ void BUISelectionList::DrawAt(double dX, double dY,
     }
 
     double dYBase = double(m_nItems - 1) * -dCharHeight;
-    double bgY = dYBase - dCharHeight / 2.0;
-    double bgH = double(m_nItems) * dCharHeight;
-    double bgX = -5 + dXOffset;
-    double bgW = dMaxLen + 11;
 
-    // Stage B: draw shadow + background via Renderer2D (shader-based).
-    // The MV variants read the current GL modelview matrix (set up by the
-    // caller's glPushMatrix/glTranslated) so local-space coords work.
-    if (Renderer2D::get().isReady()) {
-      // Shadow (offset by +6, -6 via glTranslated above)
-      glTranslated(6, -6, 0);
-      Renderer2D::get().useShader();
-      Renderer2D::get().drawSolidQuadMV(
-          float(bgX), float(bgY), float(bgW), float(bgH),
-          glm::vec4(0.0f, 0.0f, 0.0f, 0.5f));
-      glTranslated(-6, 6, 0);
+    // Shadow
+    glTranslated(6, -6, 0);
+    OpenGLHelpers::SetColorFull(0, 0, 0, 0.5);
+    glBegin(GL_QUADS);
+    glVertex3f(-5 + dXOffset, dYBase - dCharHeight / 2.0, 0);
+    glVertex3f(-5 + dXOffset,
+               dYBase + double(m_nItems - 1) * dCharHeight + dCharHeight / 2.0,
+               0);
+    glVertex3f(dXOffset + dMaxLen + 6,
+               dYBase + double(m_nItems - 1) * dCharHeight + dCharHeight / 2.0,
+               0);
+    glVertex3f(dXOffset + dMaxLen + 6, dYBase - dCharHeight / 2.0, 0);
+    glEnd();
 
-      // Actual background
-      Renderer2D::get().drawSolidQuadMV(
-          float(bgX), float(bgY), float(bgW), float(bgH),
-          glm::vec4(0.15f, 0.15f, 0.15f, 1.0f));
-      Renderer2D::get().unuseShader();
-    } else {
-      // Legacy fallback (only if shader failed to init)
-      glTranslated(6, -6, 0);
-      OpenGLHelpers::SetColorFull(0, 0, 0, 0.5);
-      glBegin(GL_QUADS);
-      glVertex3f(bgX, bgY, 0);
-      glVertex3f(bgX, bgY + bgH, 0);
-      glVertex3f(bgX + bgW, bgY + bgH, 0);
-      glVertex3f(bgX + bgW, bgY, 0);
-      glEnd();
-      glTranslated(-6, 6, 0);
-      OpenGLHelpers::SetColorFull(0.15, 0.15, 0.15, 1);
-      glBegin(GL_QUADS);
-      glVertex3f(bgX, bgY, 0);
-      glVertex3f(bgX, bgY + bgH, 0);
-      glVertex3f(bgX + bgW, bgY + bgH, 0);
-      glVertex3f(bgX + bgW, bgY, 0);
-      glEnd();
-    }
+    // Actual background
+    glTranslated(-6, 6, 0);
 
-    // Border (GL_LINE_STRIP - kept on legacy path; lines are Stage C)
+    OpenGLHelpers::SetColorFull(0.15, 0.15, 0.15, 1);
+    glBegin(GL_QUADS);
+    glVertex3f(-5 + dXOffset, dYBase - dCharHeight / 2.0, 0);
+    glVertex3f(-5 + dXOffset,
+               dYBase + double(m_nItems - 1) * dCharHeight + dCharHeight / 2.0,
+               0);
+    glVertex3f(dXOffset + dMaxLen + 6,
+               dYBase + double(m_nItems - 1) * dCharHeight + dCharHeight / 2.0,
+               0);
+    glVertex3f(dXOffset + dMaxLen + 6, dYBase - dCharHeight / 2.0, 0);
+    glEnd();
+
     OpenGLHelpers::SetColorFull(1, 1, 1, 1);
     glBegin(GL_LINE_STRIP);
     glVertex3f(-5 + dXOffset, dYBase - dCharHeight / 2.0, 0);
@@ -197,42 +183,19 @@ void BUISelectionList::DrawAt(double dX, double dY,
     }
 
     double dAlpha = fabs(double(SDL_GetTicks() % 1000) - 500.0) / 500.0;
-    float selX = float(-5 + dXOffset);
-    float selY = float(dYBase - dCharHeight / 2.0);
-    float selW = float(dLen + 10);
-    float selH = float(dCharHeight);
 
     glTranslated(0, -1, 0);
+    glBegin(GL_QUADS);
+    OpenGLHelpers::SetColorFull(0, 0, 0, 0.95 * dAlpha);
+    glVertex3f(-5 + dXOffset, dYBase + -dCharHeight / 2.0, 0);
+    OpenGLHelpers::SetColorFull(0.5, 0.5, 1, 0.5 * dAlpha);
+    glVertex3f(-5 + dXOffset, dYBase + dCharHeight / 2.0, 0);
+    OpenGLHelpers::SetColorFull(0.25, 0.25, 1, 0.5 * dAlpha);
+    glVertex3f(dXOffset + dLen + 5, dYBase + dCharHeight / 2.0, 0);
+    OpenGLHelpers::SetColorFull(0, 0, 0, 0.95 * dAlpha);
+    glVertex3f(dXOffset + dLen + 5, dYBase + -dCharHeight / 2.0, 0);
+    glEnd();
 
-    // Stage B: selection highlight via Renderer2D.
-    // The legacy code used per-vertex colors for a vertical gradient
-    // (dark at top/bottom, blue in the middle). We approximate this with
-    // a solid color using the middle blue value - the visual difference
-    // is minor and the gradient can be restored later via a custom vertex
-    // color upload if needed.
-    if (Renderer2D::get().isReady()) {
-      Renderer2D::get().useShader();
-      // Use the middle color (0.5, 0.5, 1.0) scaled by alpha.
-      // The legacy gradient was: top=black, middle=blue, bottom=dark-blue.
-      // We use the middle blue with the average alpha.
-      Renderer2D::get().drawSolidQuadMV(
-          selX, selY, selW, selH,
-          glm::vec4(0.35f, 0.35f, 0.75f, float(0.5 * dAlpha)));
-      Renderer2D::get().unuseShader();
-    } else {
-      glBegin(GL_QUADS);
-      OpenGLHelpers::SetColorFull(0, 0, 0, 0.95 * dAlpha);
-      glVertex3f(-5 + dXOffset, dYBase + -dCharHeight / 2.0, 0);
-      OpenGLHelpers::SetColorFull(0.5, 0.5, 1, 0.5 * dAlpha);
-      glVertex3f(-5 + dXOffset, dYBase + dCharHeight / 2.0, 0);
-      OpenGLHelpers::SetColorFull(0.25, 0.25, 1, 0.5 * dAlpha);
-      glVertex3f(dXOffset + dLen + 5, dYBase + dCharHeight / 2.0, 0);
-      OpenGLHelpers::SetColorFull(0, 0, 0, 0.95 * dAlpha);
-      glVertex3f(dXOffset + dLen + 5, dYBase + -dCharHeight / 2.0, 0);
-      glEnd();
-    }
-
-    // Selection border (GL_LINE mode - kept on legacy path)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     OpenGLHelpers::SetColorFull(1, 1, 1, 0.4);
     glBegin(GL_QUADS);
