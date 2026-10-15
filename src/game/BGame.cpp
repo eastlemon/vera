@@ -73,7 +73,6 @@ BMenu BGame::m_menuMain;
 BMenu BGame::m_menuChooseScene;
 BMenu BGame::m_menuChooseVehicle;
 BMenu BGame::m_menuSettings;
-BMenu BGame::m_menuCredits;
 BMenu BGame::m_menuPrecachingTerrain;
 bool BGame::m_bMenusCreated = false;
 bool BGame::m_bSettingsFromGame = false;
@@ -405,14 +404,13 @@ void BGame::SetupMenus() {
   m_menuMain.m_dTitleX = 0;
   m_menuMain.m_dTitleY = (512.0 - 314.0) / 512.0;
 
-  m_menuMain.m_nItems = 5;
+  m_menuMain.m_nItems = 3;
   m_menuMain.m_sItems = new string[m_menuMain.m_nItems];
   m_menuMain.m_items = new BMenuItem[m_menuMain.m_nItems];
 
   m_menuMain.m_items[0].m_sText = "START GAME";
   m_menuMain.m_items[1].m_sText = "SETTINGS";
-  m_menuMain.m_items[2].m_sText = "CREDITS";
-  m_menuMain.m_items[3].m_sText = "EXIT";
+  m_menuMain.m_items[2].m_sText = "EXIT";
 
   for (i = 0; i < m_menuMain.m_nItems; ++i) {
     m_menuMain.m_sItems[i] = m_menuMain.m_items[i].m_sText;
@@ -507,58 +505,6 @@ void BGame::SetupMenus() {
   m_menuSettings.m_listMenu.SelectItem(m_menuSettings.m_sItems[0]);
   // m_menuSettings.m_align = BTextRenderer::TTextAlign::ALIGN_RIGHT;
   m_menuSettings.m_align = BTextRenderer::ALIGN_RIGHT;
-
-  // Credits
-
-  // m_menuCredits.m_type = BMenu::TType::CREDITS;
-  m_menuCredits.m_type = BMenu::CREDITS;
-  m_menuCredits.m_nTitleWidth = 0;
-  m_menuCredits.m_nTitleHeight = 0;
-  m_menuCredits.m_dTitleX = 0;
-  m_menuCredits.m_dTitleY = 0;
-  m_menuCredits.m_bDrawLine = false;
-
-  m_menuCredits.m_nItems = 7;
-  m_menuCredits.m_sItems = new string[m_menuCredits.m_nItems];
-  m_menuCredits.m_items = new BMenuItem[m_menuCredits.m_nItems];
-
-  m_menuCredits.m_items[0].m_nValue =
-      0; // Second at which to start showing this item
-  m_menuCredits.m_items[0].m_nValue2 = 4;      // Seconds to show this item
-  m_menuCredits.m_items[0].m_nAssocImage = -1; // Just a blank delay
-
-  m_menuCredits.m_items[1].m_nValue = 4;
-  m_menuCredits.m_items[1].m_nValue2 = 10; // Seconds to show this item
-  m_menuCredits.m_items[1].m_nAssocImage =
-      BTextures::LoadTexture("./Textures/CreditsProgramming.tga", false);
-
-  m_menuCredits.m_items[2].m_nValue = 14;
-  m_menuCredits.m_items[2].m_nValue2 = 10; // Seconds to show this item
-  m_menuCredits.m_items[2].m_nAssocImage =
-      BTextures::LoadTexture("./Textures/CreditsModeling.tga", false);
-
-  m_menuCredits.m_items[3].m_nValue = 24;
-  m_menuCredits.m_items[3].m_nValue2 = 15; // Seconds to show this item
-  m_menuCredits.m_items[3].m_nAssocImage =
-      BTextures::LoadTexture("./Textures/CreditsBetaTesting.tga", false);
-
-  m_menuCredits.m_items[4].m_nValue = 39;
-  m_menuCredits.m_items[4].m_nValue2 = 10; // Seconds to show this item
-  m_menuCredits.m_items[4].m_nAssocImage =
-      BTextures::LoadTexture("./Textures/CreditsSpecialThanks1.tga", false);
-
-  m_menuCredits.m_items[5].m_nValue = 49;
-  m_menuCredits.m_items[5].m_nValue2 = 7; // Seconds to show this item
-  m_menuCredits.m_items[5].m_nAssocImage =
-      BTextures::LoadTexture("./Textures/CreditsEnd.tga", false);
-
-  m_menuCredits.m_items[6].m_nValue = 56;
-  m_menuCredits.m_items[6].m_nValue2 = 1; // Seconds to show this item
-  m_menuCredits.m_items[6].m_nAssocImage = -1;
-
-  m_menuCredits.m_listMenu.SetItems(m_menuCredits.m_sItems, 0);
-  // m_menuCredits.m_align = BTextRenderer::TTextAlign::ALIGN_RIGHT;
-  m_menuCredits.m_align = BTextRenderer::ALIGN_RIGHT;
 
   m_bMenusCreated = true;
 }

@@ -79,6 +79,7 @@ public:
     WATER,
     GASSTATION,
     MENU_TITLES,
+    MENU_BACKGROUND,
     FUELING,
     USER_BASE
   }; // Always make sure USER_BASE is the last texture!

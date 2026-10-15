@@ -768,7 +768,7 @@ void CVeraView::OnDrawGame() {
   // glPopAttrib();
 
   if (!m_game.GetSimulation()->m_bPaused) {
-    // Invalidate();
+    
   }
 }
 

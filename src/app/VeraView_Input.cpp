@@ -59,7 +59,7 @@ void CVeraView::OnChar(int nChar, int nRepCnt, int nFlags) {
   case BSceneEditor::ASKING_SCENE_DISPLAY_NAME:
   // case BSceneEditor::TPhase::ASKING_SCENE_FILENAME:
   case BSceneEditor::ASKING_SCENE_FILENAME: {
-    // Invalidate();
+    
     m_game.GetSceneEditor()->m_edit.ProcessChar(nChar);
     BUIEdit::TStatus statusEdit;
     string sObjectName = m_game.GetSceneEditor()->m_edit.GetValue(statusEdit);
@@ -663,7 +663,7 @@ void CVeraView::OnKeyDownFueling(int nChar, int nRepCnt, int nFlags) {
     }
     break;
   }
-  // Invalidate();
+  
 }
 
 void CVeraView::OnKeyDownGameMenu(int nChar, int nRepCnt, int nFlags) {
@@ -790,7 +790,7 @@ void CVeraView::OnKeyDownGameMenu(int nChar, int nRepCnt, int nFlags) {
       BUI::StartUsingSelectionList(&(BGame::m_pMenuCurrent->m_listMenu),
                                    &CVeraView::OnKeyDownCurrentMenu);
       StartMenuScroll(SCROLL_LEFT);
-      // Invalidate();
+      
       break;
     case 4:
       // Cancel Order
@@ -798,7 +798,7 @@ void CVeraView::OnKeyDownGameMenu(int nChar, int nRepCnt, int nFlags) {
       m_pKeyDownFunction = &CVeraView::OnKeyDownCancelQuestion;
       m_game.m_bShowGameMenu = !m_game.m_bShowGameMenu;
       m_game.m_bShowCancelQuestion = true;
-      // Invalidate();
+      
       break;
     case 5:
       // Return to game
@@ -814,7 +814,7 @@ void CVeraView::OnKeyDownGameMenu(int nChar, int nRepCnt, int nFlags) {
     if (m_game.m_nGameMenuSelection == 0) {
       m_game.m_nGameMenuSelection = 5;
     }
-    // Invalidate();
+    
     break;
   // case VK_UP:
   case SDLK_UP:
@@ -822,7 +822,7 @@ void CVeraView::OnKeyDownGameMenu(int nChar, int nRepCnt, int nFlags) {
     if (m_game.m_nGameMenuSelection == 6) {
       m_game.m_nGameMenuSelection = 1;
     }
-    // Invalidate();
+    
     break;
   }
 }
@@ -1236,14 +1236,14 @@ void CVeraView::OnKeyDownSceneEditor(int nChar, int nRepCnt, int nFlags) {
     m_game.Command()->Run("toggle service");
     break;
   }
-  // Invalidate();
+  
 }
 
 void CVeraView::OnKeyDownSelectionList(int nChar, int nRepCnt, int nFlags) {
   BUISelectionList *pList = BUI::GetActiveSelectionList();
   if (!pList) {
     m_pKeyDownFunction = BUI::StopUsingSelectionList();
-    // Invalidate();
+    
   }
 
   bool bAdvancePhase = false;
@@ -1295,14 +1295,14 @@ void CVeraView::OnKeyDownSelectionList(int nChar, int nRepCnt, int nFlags) {
     BGame::GetSceneEditor()->AdvancePhase();
   }
 
-  // Invalidate();
+  
 }
 
 void CVeraView::OnKeyDownSlider(int nChar, int nRepCnt, int nFlags) {
   int *pnSliderValue = BUI::m_pnSliderValue;
   if (!pnSliderValue) {
     m_pKeyDownFunction = BUI::StopUsingSlider();
-    // Invalidate();
+    
   }
 
   switch (nChar) {
@@ -1358,7 +1358,7 @@ void CVeraView::OnKeyDownSlider(int nChar, int nRepCnt, int nFlags) {
     *pnSliderValue = 100;
   }
 
-  // Invalidate();
+  
 }
 
 void CVeraView::OnKeyDown(int nChar, int nRepCnt, int nFlags) {

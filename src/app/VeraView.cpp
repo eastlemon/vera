@@ -249,38 +249,6 @@ bool CVeraView::OnEraseBkgnd() {
   return true;
 }
 
-void CVeraView::OnDestroy() {
-  // Return to original display settings
-
-  // CloseAVI();
-
-  // FIXME
-  /*DEVMODE devmode;
-  EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devmode);
-  if((devmode.dmPelsWidth  != g_devmodeOrig.dmPelsWidth) ||
-     (devmode.dmPelsHeight != g_devmodeOrig.dmPelsHeight) ||
-     (devmode.dmBitsPerPel != g_devmodeOrig.dmBitsPerPel) ||
-     (devmode.dmDisplayFrequency != g_devmodeOrig.dmDisplayFrequency)) {
-    devmode.dmPelsWidth = g_devmodeOrig.dmPelsWidth;
-    devmode.dmPelsHeight = g_devmodeOrig.dmPelsHeight;
-    devmode.dmBitsPerPel = g_devmodeOrig.dmBitsPerPel;
-    devmode.dmDisplayFrequency = g_devmodeOrig.dmDisplayFrequency;
-    ChangeDisplaySettings(&devmode, 0);
-  }
-
-  HWND hWnd = GetSafeHwnd();
-  HDC hDCWnd = ::GetDC(hWnd);
-  wglMakeCurrent(hDCWnd, m_hGLRC);
-  BTextures::Exit();
-  HDC   hDC = wglGetCurrentDC();
-  wglMakeCurrent(NULL, NULL);
-  if (m_hGLRC)
-    wglDeleteContext(m_hGLRC);
-  if (hDC)
-    ::ReleaseDC(GetSafeHwnd(), hDC);
-  CView::OnDestroy();*/
-}
-
 void CVeraView::InitializeOpenGL() {
   // glClearColor(225.0f/255.0f, 234.0f/255.0f, 1, 0); /* For RGB-mode */
   glClearColor(0, 0, 0, 0); /* For RGB-mode */

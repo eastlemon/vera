@@ -2,12 +2,13 @@ Vera Game
 
 -------------------------------------------
 
-cd ~/vera
+# Поставить зависимости
+brew install sdl2 sdl2_ttf sdl2_image libvorbis pkg-config
 
-rm -rf build_macos Vera
+# Пересобрать
+rm -rf build_macos Vera && make -f Makefile.macos
 
-make -f Makefile.macos
-
+# Запустить
 ./Vera
 
 -------------------------------------------

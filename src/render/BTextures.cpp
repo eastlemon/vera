@@ -58,6 +58,7 @@ void BTextures::LoadAllInternalTextures() {
   LoadTextureFromTGA("Textures/GasStation.tga", GASSTATION, true);
   LoadTextureFromTGA("Textures/Bricks.tga", BRICKS, true);
   LoadTextureFromTGA("Textures/MenuTitles.tga", MENU_TITLES, false);
+  LoadTextureFromTGA("Textures/MenuBackground.tga", MENU_BACKGROUND, true);
   LoadTextureFromTGA("Textures/Fueling.tga", FUELING, false);
   m_nTextures = USER_BASE;
 }

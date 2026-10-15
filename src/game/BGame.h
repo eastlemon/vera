@@ -88,7 +88,6 @@ public:
   static BMenu m_menuChooseScene;
   static BMenu m_menuChooseVehicle;
   static BMenu m_menuSettings;
-  static BMenu m_menuCredits;
   static BMenu m_menuPrecachingTerrain;
   static bool m_bSettingsFromGame;
 

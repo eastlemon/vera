@@ -45,8 +45,7 @@ public:
     CHOOSE_SCENE,
     CHOOSE_VEHICLE,
     PRECACHING_TERRAIN,
-    SETTINGS,
-    CREDITS
+    SETTINGS
   };
 
   TType m_type;
