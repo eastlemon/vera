@@ -6,6 +6,11 @@
 
 #include <SDL2/SDL.h>
 
+// GLEW must be included before any other GL header.
+#if !defined(__APPLE__) || !defined(__MACH__)
+#include <GL/glew.h>
+#endif
+
 using namespace std;
 
 #include "VeraView.h"
@@ -13,6 +18,7 @@ using namespace std;
 #include "BTextures.h"
 #include "OpenGLExtFunctions.h"
 #include "OpenGLHelpers.h"
+#include "Renderer2D.h"
 #if defined(__APPLE__) && defined(__MACH__)
 #include <OpenGL/gl.h>
 #else
@@ -1593,37 +1599,25 @@ void CVeraView::DrawTrackingTargetOnScreen(BTrackingTarget *pTarget) {
 }
 
 void CVeraView::DrawQuickHelp() {
-  // Draw quick help as a texture
-  OpenGLHelpers::SetColorFull(1, 1, 1, 1);
+  // Draw quick help as a fullscreen texture overlay (512x512, centered).
+  //
+  // Stage B: migrated from glBegin/glEnd to Renderer2D (shader-based).
+  // The quad covers the centred 512x512 region of the window.
+  if (Renderer2D::get().init(window_width, window_height)) {
+    Renderer2D::get().useShader();
+    OpenGLHelpers::SwitchToTexture(0);
+    if (BGame::GetSceneEditor()->IsActive()) {
+      BTextures::Use(BTextures::QUICK_HELP_SCENE_EDITOR);
+    } else {
+      BTextures::Use(BTextures::QUICK_HELP);
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-  OpenGLHelpers::SwitchToTexture(0);
-  if (BGame::GetSceneEditor()->IsActive()) {
-    BTextures::Use(BTextures::QUICK_HELP_SCENE_EDITOR);
-  } else {
-    BTextures::Use(BTextures::QUICK_HELP);
+    float qx = float(window_width - 512) / 2.0f;
+    float qy = float(window_height - 512) / 2.0f;
+    Renderer2D::get().drawTexturedQuad(qx, qy, 512.0f, 512.0f);
+    Renderer2D::get().unuseShader();
   }
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  glBegin(GL_TRIANGLE_STRIP);
-  OpenGLHelpers::SetTexCoord(0, 1);
-  // glVertex3f((m_rectWnd.Width() - 512) / 2, m_rectWnd.Height() -
-  // (m_rectWnd.Height() - 512) / 2, 0);
-  glVertex3f((window_width - 512) / 2,
-             window_height - (window_height - 512) / 2, 0);
-  OpenGLHelpers::SetTexCoord(0, 0);
-  // glVertex3f((m_rectWnd.Width() - 512) / 2, (m_rectWnd.Height() - 512) / 2,
-  // 0);
-  glVertex3f((window_width - 512) / 2, (window_height - 512) / 2, 0);
-  OpenGLHelpers::SetTexCoord(1, 1);
-  // glVertex3f((m_rectWnd.Width() - 512) / 2 + 512, m_rectWnd.Height() -
-  // (m_rectWnd.Height() - 512) / 2, 0);
-  glVertex3f((window_width - 512) / 2 + 512,
-             window_height - (window_height - 512) / 2, 0);
-  OpenGLHelpers::SetTexCoord(1, 0);
-  // glVertex3f((m_rectWnd.Width() - 512) / 2 + 512, (m_rectWnd.Height() - 512)
-  // / 2, 0);
-  glVertex3f((window_width - 512) / 2 + 512, (window_height - 512) / 2, 0);
-  glEnd();
 }
 
 void CVeraView::DrawNavSat() {

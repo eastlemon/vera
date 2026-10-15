@@ -425,29 +425,39 @@ void CVeraView::DrawMenu(BMenu *pMenu) {
         }
       }
 
-      // Draw associated image, if one is available
+      // Draw associated image, if one is available.
+      //
+      // Stage B: migrated from glBegin/glEnd to Renderer2D (shader-based).
+      // The image is a 256x256 quad placed at the right side of the menu,
+      // centred vertically. If the item is disabled (e.g. locked vehicle),
+      // a hatched overlay is drawn on top using legacy GL_LINES (kept as-is
+      // since it's a visual effect, not a textured quad).
       string sTmp;
       int nSelected = pMenu->m_listMenu.GetSelectedItem(sTmp);
       if ((nSelected != -1) && (pMenu->m_items[nSelected].m_nAssocImage != -1)) {
-        OpenGLHelpers::SetColorFull(1, 1, 1, 1);
-        OpenGLHelpers::SwitchToTexture(0);
-        BTextures::Use(pMenu->m_items[nSelected].m_nAssocImage);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // not mipmapped
-        glPushMatrix();
-        glTranslated(window_width / 2 + window_width / 40, window_height / 2, 0);
-        glBegin(GL_TRIANGLE_STRIP);
-        OpenGLHelpers::SetTexCoord(0, 0);
-        glVertex3f(0, -128, 0);
-        OpenGLHelpers::SetTexCoord(0, 1);
-        glVertex3f(0, 128, 0);
-        OpenGLHelpers::SetTexCoord(1, 0);
-        glVertex3f(256, -128, 0);
-        OpenGLHelpers::SetTexCoord(1, 1);
-        glVertex3f(256, 128, 0);
-        glEnd();
+        // Compute absolute screen coordinates.
+        // Legacy code: glTranslated(w/2 + w/40, h/2, 0) then drew quad
+        // from (0, -128) to (256, 128) relative to that origin.
+        float imgX = float(window_width) / 2.0f + float(window_width) / 40.0f;
+        float imgY = float(window_height) / 2.0f - 128.0f;
+        float imgW = 256.0f;
+        float imgH = 256.0f;
 
-        // If disabled, draw veil over image
+        if (Renderer2D::get().init(window_width, window_height)) {
+          Renderer2D::get().useShader();
+          OpenGLHelpers::SwitchToTexture(0);
+          BTextures::Use(pMenu->m_items[nSelected].m_nAssocImage);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          Renderer2D::get().drawTexturedQuad(imgX, imgY, imgW, imgH);
+          Renderer2D::get().unuseShader();
+        }
+
+        // If disabled, draw veil over image (legacy GL_LINES hatch pattern).
+        // Kept on the fixed-function path because it's a line-based effect,
+        // not a textured quad - migrating lines is Stage C territory.
         if (pMenu->m_items[nSelected].m_bDisabled) {
+          glPushMatrix();
+          glTranslated(imgX, imgY + 128, 0);  // match legacy origin
           OpenGLHelpers::SetColorFull(0, 0, 0, 0.5);
           glDisable(GL_TEXTURE_2D);
           glBegin(GL_LINES);
@@ -462,9 +472,8 @@ void CVeraView::DrawMenu(BMenu *pMenu) {
           }
           glEnd();
           OpenGLHelpers::SetColorFull(1, 1, 1, 1);
+          glPopMatrix();
         }
-
-        glPopMatrix();
       }
     }
 
