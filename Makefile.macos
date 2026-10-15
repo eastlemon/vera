@@ -2,7 +2,7 @@
 #
 # Prerequisites:
 #   xcode-select --install
-#   brew install sdl2 sdl2_ttf sdl2_image sdl2_mixer libvorbis pkg-config
+#   brew install sdl2 sdl2_ttf sdl2_image sdl2_mixer glew libvorbis pkg-config
 #
 # Build:   make -f Makefile.macos
 # Run:     ./Vera
@@ -14,8 +14,8 @@ CXX      ?= clang++
 CXXFLAGS ?= -std=c++11 -O2 -g \
             -Wall -Wno-unused -Wno-write-strings \
             -Wno-deprecated-declarations -Wno-sign-compare \
-            $(shell pkg-config --cflags sdl2 sdl2_ttf sdl2_image sdl2_mixer vorbisfile 2>/dev/null)
-LDFLAGS  ?= $(shell pkg-config --libs sdl2 sdl2_ttf sdl2_image sdl2_mixer vorbisfile 2>/dev/null) \
+            $(shell pkg-config --cflags sdl2 sdl2_ttf sdl2_image sdl2_mixer vorbisfile glew 2>/dev/null)
+LDFLAGS  ?= $(shell pkg-config --libs sdl2 sdl2_ttf sdl2_image sdl2_mixer vorbisfile glew 2>/dev/null) \
             -framework OpenGL
 
 # Source layout (mirror of Makefile).
@@ -25,7 +25,7 @@ SRC_DIRS := $(addprefix src/,$(SUBDIRS))
 SOURCES := $(shell find src -name '*.cpp')
 OBJECTS := $(patsubst src/%.cpp,build/%.o,$(SOURCES))
 
-INCLUDES := $(addprefix -I,$(SRC_DIRS)) -Isrc
+INCLUDES := $(addprefix -I,$(SRC_DIRS)) -Isrc -Ivendor
 
 EXECUTABLE := Vera
 
