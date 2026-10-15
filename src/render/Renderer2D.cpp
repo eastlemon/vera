@@ -15,12 +15,13 @@ layout(location = 1) in vec2 aUV;
 layout(location = 2) in vec4 aColor;
 
 uniform mat4 uProjection;
+uniform mat4 uModelview;
 
 out vec2 vUV;
 out vec4 vColor;
 
 void main() {
-  gl_Position = uProjection * vec4(aPos, 0.0, 1.0);
+  gl_Position = uProjection * uModelview * vec4(aPos, 0.0, 1.0);
   vUV = aUV;
   vColor = aColor;
 }
@@ -83,6 +84,10 @@ void Renderer2D::useShader() {
   if (!m_ready) return;
   m_shader.use();
   m_shader.setUniform("uProjection", m_projection);
+  // Default modelview = identity (screen-space coordinates).
+  // drawTexturedQuadMV / drawSolidQuadMV override this with the current
+  // GL modelview matrix.
+  m_shader.setUniform("uModelview", glm::mat4(1.0f));
   // Texture unit 0 is the default; the caller is responsible for
   // glBindTexture(GL_TEXTURE_2D, ...) before drawing.
   m_shader.setUniform("uTexture", 0);
@@ -90,6 +95,18 @@ void Renderer2D::useShader() {
 
 void Renderer2D::unuseShader() {
   Shader::unuse();
+}
+
+glm::mat4 Renderer2D::currentModelview() const {
+  double m[16];
+  glGetDoublev(GL_MODELVIEW_MATRIX, m);
+  return glm::make_mat4(m);
+}
+
+glm::mat4 Renderer2D::currentProjection() const {
+  double m[16];
+  glGetDoublev(GL_PROJECTION_MATRIX, m);
+  return glm::make_mat4(m);
 }
 
 void Renderer2D::drawTexturedQuad(float x, float y, float w, float h,
@@ -117,5 +134,27 @@ void Renderer2D::drawSolidQuad(float x, float y, float w, float h,
   // equal to the per-vertex color.
   glBindTexture(GL_TEXTURE_2D, m_whiteTex);
   drawTexturedQuad(x, y, w, h, color);
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Renderer2D::drawTexturedQuadMV(float x, float y, float w, float h,
+                                     const glm::vec4 &color) {
+  if (!m_ready) return;
+  // Override uModelview with the current GL modelview matrix so the quad's
+  // local-space coordinates are transformed by the caller's glTranslated.
+  m_shader.setUniform("uModelview", currentModelview());
+  drawTexturedQuad(x, y, w, h, color);
+  // Restore identity for any subsequent non-MV draw calls.
+  m_shader.setUniform("uModelview", glm::mat4(1.0f));
+}
+
+void Renderer2D::drawSolidQuadMV(float x, float y, float w, float h,
+                                  const glm::vec4 &color) {
+  if (!m_ready) return;
+  ensureWhiteTexture();
+  glBindTexture(GL_TEXTURE_2D, m_whiteTex);
+  m_shader.setUniform("uModelview", currentModelview());
+  drawTexturedQuad(x, y, w, h, color);
+  m_shader.setUniform("uModelview", glm::mat4(1.0f));
   glBindTexture(GL_TEXTURE_2D, 0);
 }

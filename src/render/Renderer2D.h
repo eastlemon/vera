@@ -21,6 +21,7 @@
 #include "Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Renderer2D {
 public:
@@ -60,6 +61,16 @@ public:
   void drawSolidQuad(float x, float y, float w, float h,
                      const glm::vec4 &color);
 
+  // ----- Modelview-aware variants -----
+  // These read the current GL modelview matrix (set up by the caller via
+  // glPushMatrix / glTranslated / glPopMatrix) and pass it to the shader.
+  // Use these when the quad's coordinates are in a local space established
+  // by a glTranslated call - e.g. inside BUISelectionList::DrawAt.
+  void drawTexturedQuadMV(float x, float y, float w, float h,
+                          const glm::vec4 &color = glm::vec4(1.0f));
+  void drawSolidQuadMV(float x, float y, float w, float h,
+                       const glm::vec4 &color);
+
   // Bind the 2D shader. Use this when you need to set custom uniforms
   // before calling drawTexturedQuad.
   void useShader();
@@ -81,4 +92,9 @@ private:
   // 1x1 white texture for drawSolidQuad.
   GLuint m_whiteTex = 0;
   void ensureWhiteTexture();
+
+  // Read the current GL modelview matrix and return it as glm::mat4.
+  glm::mat4 currentModelview() const;
+  // Read the current GL projection matrix.
+  glm::mat4 currentProjection() const;
 };
