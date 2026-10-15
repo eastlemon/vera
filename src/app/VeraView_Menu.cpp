@@ -182,14 +182,23 @@ void CVeraView::OnDrawCurrentMenu() {
       (GLfloat)0; /* w=0 -> directional light (not positional) */
   glLightfv(GL_LIGHT0, GL_POSITION, fLight1PositionG);
 
+  // Menu transition animation: 250ms scroll from the previous menu to the
+  // current one. Shorter than the original 500ms to avoid the visual lag
+  // where the old menu lingered on screen while the new one was already
+  // interactive.
+  constexpr unsigned MENU_SCROLL_MS = 250;
   bool bScrolling = false;
   double dScrollPhase = 0;
   unsigned clockNow = SDL_GetTicks();
-  if ((clockNow - m_clockMenuScroll) < 500.0) {
+  if ((clockNow - m_clockMenuScroll) < MENU_SCROLL_MS) {
     bScrolling = true;
-    dScrollPhase = double(clockNow - m_clockMenuScroll) / 500.0;
+    dScrollPhase = double(clockNow - m_clockMenuScroll) / double(MENU_SCROLL_MS);
     dScrollPhase =
         (1.0 + sin(((dScrollPhase * 2.0) - 1.0) * 3.1415926 * 0.5)) * 0.5;
+  } else if (BGame::m_pMenuPrevious != BGame::m_pMenuCurrent) {
+    // Scroll animation just finished - drop the reference to the previous
+    // menu so it can never be drawn again by accident.
+    BGame::m_pMenuPrevious = BGame::m_pMenuCurrent;
   }
 
   // Draw menu
@@ -235,7 +244,8 @@ void CVeraView::OnDrawCurrentMenu() {
   // glDisable(GL_BLEND);
   // glEnable(GL_TEXTURE_2D);
 
-  if (bScrolling) {
+  if (bScrolling && BGame::m_pMenuPrevious &&
+      BGame::m_pMenuPrevious != BGame::m_pMenuCurrent) {
     // Draw previous and new menu scrolling
     glPushMatrix();
     if (m_scrollDir == SCROLL_RIGHT) {
@@ -705,7 +715,7 @@ void CVeraView::ReturnPressedOnCurrentMenu() {
       BUI::StartUsingSelectionList(&(BGame::m_pMenuCurrent->m_listMenu), &CVeraView::OnKeyDownCurrentMenu);
       StartMenuScroll(SCROLL_LEFT);
       break;
-    case 3:
+    case 2: // EXIT
       SoundModule::StopMenuMusic();
       setExit();
       break;

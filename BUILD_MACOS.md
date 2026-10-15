@@ -19,7 +19,7 @@ xcode-select --install
 Install the game's dependencies via Homebrew:
 
 ```bash
-brew install sdl2 sdl2_ttf sdl2_image libvorbis pkg-config
+brew install sdl2 sdl2_ttf sdl2_image sdl2_mixer libvorbis pkg-config
 ```
 
 | Dependency   | What it provides                                |
@@ -88,7 +88,7 @@ To exit, close the window or press ⌘Q.
 ## 4. Common issues
 
 ### `fatal error: 'SDL2/SDL.h' file not found`
-Re-run `brew install sdl2 sdl2_ttf sdl2_image`. If `pkg-config --cflags sdl2`
+Re-run `brew install sdl2 sdl2_ttf sdl2_image sdl2_mixer`. If `pkg-config --cflags sdl2`
 returns nothing, set:
 
 ```bash
