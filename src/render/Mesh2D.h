@@ -19,12 +19,7 @@
 
 #pragma once
 
-#if defined(__APPLE__) && defined(__MACH__)
-#include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
-#else
-#include <GL/glew.h>
-#endif
+#include "GLCompat.h"
 #include <glm/glm.hpp>
 
 class Mesh2D {

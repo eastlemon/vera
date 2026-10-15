@@ -6,11 +6,7 @@
 
 #include <SDL2/SDL.h>
 
-// GLEW must be included before any other GL header. On macOS we use the
-// system OpenGL framework instead (Renderer2D.h falls back to gl.h + glext.h).
-#if !defined(__APPLE__) || !defined(__MACH__)
-#include <GL/glew.h>
-#endif
+#include "GLCompat.h"
 
 using namespace std;
 
@@ -20,11 +16,6 @@ using namespace std;
 #include "OpenGLExtFunctions.h"
 #include "OpenGLHelpers.h"
 #include "Renderer2D.h"
-#if defined(__APPLE__) && defined(__MACH__)
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
 #if defined(__APPLE__) && defined(__MACH__)
 #include <OpenGL/glu.h>
 #else

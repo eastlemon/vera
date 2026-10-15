@@ -1,9 +1,5 @@
 // BUI: Misc UI components
-// GLEW must be included before any other GL header (BGame.h -> BSimulation.h
-// -> OpenGLHelpers.h -> GL/gl.h would break GLEW otherwise).
-#if !defined(__APPLE__) || !defined(__MACH__)
-#include <GL/glew.h>
-#endif
+#include "GLCompat.h"
 
 #include "BUI.h"
 #include "BGame.h"

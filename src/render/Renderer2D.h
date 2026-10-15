@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "GLCompat.h"
 #include "Mesh2D.h"
 #include "Shader.h"
 #include <glm/glm.hpp>

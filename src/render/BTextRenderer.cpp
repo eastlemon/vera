@@ -1,23 +1,6 @@
 // BTextRenderer: text rendering via TextRenderer2D (shader-based).
-//
-// The public API (StartRenderingText / DrawTextAt / DrawSmallTextAt /
-// StopRenderingText / GetCharWidth / GetCharHeight) is preserved so all
-// callers (BUISelectionList, BServiceWnd, BNavSatWnd, BSceneEditor, etc.)
-// keep working without changes.
-//
-// Internally, each Draw* call delegates to TextRenderer2D, which uploads
-// a dynamic VBO (6 vertices per glyph = 2 triangles) and draws the whole
-// string in a single glDrawArrays call. This replaces the old per-character
-// glBegin/glEnd loop.
-//
-// The glyph atlas is NavSatWndBigLetters.tga (loaded as BTextures::PANEL).
-// Big font:   14.5 x 28.75 px, 5 columns,  origin (1, 0)
-// Small font:  8.25 x 13.9 px, 10 columns, origin (401, 284)
 
-// GLEW must be included before any other GL header.
-#if !defined(__APPLE__) || !defined(__MACH__)
-#include <GL/glew.h>
-#endif
+#include "GLCompat.h"
 
 #include "BTextRenderer.h"
 #include "BSimulation.h"
