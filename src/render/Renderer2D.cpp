@@ -8,17 +8,17 @@
 // the binary. The same shaders are in shaders/screen_quad.{vert,frag} for
 // reference / editing; this string is the canonical copy used at runtime.
 static const char *kVertexShaderSrc = R"(
-#version 330 core
+#version 120
 
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aUV;
-layout(location = 2) in vec4 aColor;
+attribute vec2 aPos;
+attribute vec2 aUV;
+attribute vec4 aColor;
 
 uniform mat4 uProjection;
 uniform mat4 uModelview;
 
-out vec2 vUV;
-out vec4 vColor;
+varying vec2 vUV;
+varying vec4 vColor;
 
 void main() {
   gl_Position = uProjection * uModelview * vec4(aPos, 0.0, 1.0);
@@ -28,18 +28,16 @@ void main() {
 )";
 
 static const char *kFragmentShaderSrc = R"(
-#version 330 core
+#version 120
 
-in vec2 vUV;
-in vec4 vColor;
+varying vec2 vUV;
+varying vec4 vColor;
 
 uniform sampler2D uTexture;
 
-out vec4 FragColor;
-
 void main() {
-  vec4 tex = texture(uTexture, vUV);
-  FragColor = tex * vColor;
+  vec4 tex = texture2D(uTexture, vUV);
+  gl_FragColor = tex * vColor;
 }
 )";
 

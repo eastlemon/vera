@@ -68,6 +68,15 @@ bool Shader::loadFromSource(const std::string &vertexSrc,
   m_program = glCreateProgram();
   glAttachShader(m_program, vs);
   glAttachShader(m_program, fs);
+
+  // Bind attribute locations BEFORE linking. GLSL 1.20 (used for macOS
+  // compatibility) does not support 'layout(location = N)' in the shader
+  // source, so we must bind them here. Mesh2D's VAO uses hardcoded
+  // locations 0 (pos), 1 (uv), 2 (color).
+  glBindAttribLocation(m_program, 0, "aPos");
+  glBindAttribLocation(m_program, 1, "aUV");
+  glBindAttribLocation(m_program, 2, "aColor");
+
   glLinkProgram(m_program);
 
   // Shaders can be detached and deleted once linked.

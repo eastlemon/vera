@@ -66,16 +66,12 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // Request an OpenGL 3.3 compatibility profile context. This gives us
-  // access to modern functions (glGenVertexArrays, glCreateShader, ...)
-  // via GLEW while keeping the legacy fixed-function pipeline alive for
-  // the parts of the renderer that haven't been migrated yet.
-  //
-  // On macOS, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY is required to keep
-  // glBegin/glEnd working; without it the context would be core-profile
-  // only and the legacy renderer would crash on the first GL call.
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  // Request a legacy/compatibility OpenGL context.
+  // On macOS this gives us OpenGL 2.1 with GLSL 1.20 support, which is
+  // enough for both the legacy fixed-function renderer (glBegin/glEnd)
+  // and the modern shader-based renderer (VAO + VBO + GLSL 1.20 shaders).
+  // We do NOT request a specific version - on macOS, requesting 3.3
+  // forces a core-profile context that kills glBegin/glEnd.
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                       SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);

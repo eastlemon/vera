@@ -20,17 +20,17 @@
 //                currently the whole string uses one color)
 
 static const char *kTextVertexShader = R"(
-#version 330 core
+#version 120
 
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aUV;
-layout(location = 2) in vec4 aColor;
+attribute vec2 aPos;
+attribute vec2 aUV;
+attribute vec4 aColor;
 
 uniform mat4 uProjection;
 uniform mat4 uModelview;
 
-out vec2 vUV;
-out vec4 vColor;
+varying vec2 vUV;
+varying vec4 vColor;
 
 void main() {
   gl_Position = uProjection * uModelview * vec4(aPos, 0.0, 1.0);
@@ -40,18 +40,16 @@ void main() {
 )";
 
 static const char *kTextFragmentShader = R"(
-#version 330 core
+#version 120
 
-in vec2 vUV;
-in vec4 vColor;
+varying vec2 vUV;
+varying vec4 vColor;
 
 uniform sampler2D uTexture;
 
-out vec4 FragColor;
-
 void main() {
-  vec4 tex = texture(uTexture, vUV);
-  FragColor = tex * vColor;
+  vec4 tex = texture2D(uTexture, vUV);
+  gl_FragColor = tex * vColor;
 }
 )";
 
@@ -98,6 +96,12 @@ bool TextRenderer2D::init() {
   m_shader = glCreateProgram();
   glAttachShader(m_shader, vs);
   glAttachShader(m_shader, fs);
+
+  // Bind attribute locations BEFORE linking (GLSL 1.20 compatibility).
+  glBindAttribLocation(m_shader, 0, "aPos");
+  glBindAttribLocation(m_shader, 1, "aUV");
+  glBindAttribLocation(m_shader, 2, "aColor");
+
   glLinkProgram(m_shader);
   glDetachShader(m_shader, vs);
   glDetachShader(m_shader, fs);
