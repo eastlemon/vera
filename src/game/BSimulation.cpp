@@ -118,69 +118,6 @@ void BSimulation::PreProcessVisualization() {}
 
 // void BSimulation::PrePaint(CDC *pDC) {
 void BSimulation::PrePaint() {
-  if (ControllerModule::m_bInitialized && (BGame::m_nController == 1) &&
-      (ControllerModule::m_nCurrent >= 0)) {
-    // FIXME
-    /*DIJOYSTATE stateRaw;
-    if(ControllerModule::GetControllerState(BGame::m_controllerstate,
-    &stateRaw)) { m_vehicle.m_dTurn = BGame::m_controllerstate.m_dTurn;
-
-      m_vehicle.m_rotor.m_bHeliLifting = false;
-      m_bLiftingUp = false;
-      if(BGame::m_controllerstate.m_bLift) {
-        if(m_vehicle.m_rotor.m_nHeliMode > 0) {
-          m_vehicle.m_rotor.m_bHeliLifting = true;
-        } else if(!m_bLiftingUp) {
-          m_bLiftingUp = true;
-          m_dLiftZ     =
-    m_vehicle.m_pBodyPoint[m_vehicle.m_nLiftPoint1].m_vLocation.m_dZ;
-        }
-      }
-
-      m_vehicle.m_rotor.m_bHeliRighting = false;
-      m_vehicle.m_rotor.m_bHeliLefting = false;
-      m_vehicle.m_rotor.m_bHeliForwarding = false;
-      m_vehicle.m_rotor.m_bHeliBacking = false;
-      if((BGame::m_controllerstate.m_dTurn > 0.1)  &&
-         (m_vehicle.m_rotor.m_nHeliMode > 399)) {
-        m_vehicle.m_rotor.m_bHeliRighting = true;
-      } else if((BGame::m_controllerstate.m_dTurn < -0.1)  &&
-                (m_vehicle.m_rotor.m_nHeliMode > 399)) {
-        m_vehicle.m_rotor.m_bHeliLefting = true;
-      }
-
-      m_vehicle.m_bAccelerating = false;
-      m_vehicle.m_bReversing = false;
-      if(BGame::m_controllerstate.m_dAcceleration > 0) {
-        m_vehicle.m_dAccelerationFactor =
-    BGame::m_controllerstate.m_dAcceleration * m_vehicle.m_dFuelFactor;
-        m_vehicle.m_bAccelerating = true;
-        if((BGame::m_controllerstate.m_dAcceleration > 0.1) &&
-           (m_vehicle.m_rotor.m_nHeliMode > 399)) {
-          m_vehicle.m_rotor.m_bHeliForwarding = true;
-        }
-      }
-      if(BGame::m_controllerstate.m_dReverse > 0) {
-        m_vehicle.m_dReversingFactor = BGame::m_controllerstate.m_dReverse *
-    m_vehicle.m_dFuelFactor; m_vehicle.m_bReversing = true;
-        if((BGame::m_controllerstate.m_dReverse > 0.1) &&
-           (m_vehicle.m_rotor.m_nHeliMode > 399)) {
-          m_vehicle.m_rotor.m_bHeliBacking = true;
-        }
-      }
-      m_vehicle.m_bBreaking = BGame::m_controllerstate.m_dBrake > 0.5;
-      if(BGame::m_controllerstate.m_bHeliEvent) {
-        ToggleHeli();
-      }
-      if(BGame::m_controllerstate.m_bJetEvent) {
-        BGame::Command()->Run("toggle jet");
-      }
-      if(BGame::m_controllerstate.m_bCameraEvent) {
-        SwitchCameraMode();
-      }
-    }*/
-  }
-
   m_vehicle.m_vWindDirection = BGame::m_vWindDirection;
   m_vehicle.m_dWindStrength = BGame::m_dWindStrength;
 
@@ -3341,7 +3278,7 @@ void BSimulation::ApplyWheelForces(BWheel& rWheel) {
 
     rWheel.m_dSuspension += dSuspGets * rWheel.m_dDepth;
 
-	  double dBodyPointGets = 1.0 - dSuspGets;
+          double dBodyPointGets = 1.0 - dSuspGets;
 
 
     // 4) Modify suspPoint's vector with wheel.up * 

@@ -64,7 +64,7 @@ void BNavSatWnd::StartTracking(BVector vPos) {
     // Clear old images
     memset(g_ubMapImageTemp, 0, 256 * 256 * 3);
     memset(g_ubMapImage, 0, 256 * 256 * 3);
-    memset(g_dHeightMap, 0, 256 * 256);
+    memset(g_dHeightMap, 0, 256 * 256 * sizeof(double));
 
   } else {
     g_bContinueImage = true;
@@ -110,7 +110,7 @@ BVector BNavSatWnd::Track(BVector vPos) {
     // Clear old images
     memset(g_ubMapImageTemp, 0, 256 * 256 * 3);
     memset(g_ubMapImage, 0, 256 * 256 * 3);
-    memset(g_dHeightMap, 0, 256 * 256);
+    memset(g_dHeightMap, 0, 256 * 256 * sizeof(double));
   }
 
   // LeaveCriticalSection(&g_csComm);
@@ -198,7 +198,7 @@ void BNavSatWnd::SetResolution(double dRes) {
     // Clear old images
     memset(g_ubMapImageTemp, 0, 256 * 256 * 3);
     memset(g_ubMapImage, 0, 256 * 256 * 3);
-    memset(g_dHeightMap, 0, 256 * 256);
+    memset(g_dHeightMap, 0, 256 * 256 * sizeof(double));
   }
   // LeaveCriticalSection(&g_csComm);
   SDL_UnlockMutex(g_csComm);

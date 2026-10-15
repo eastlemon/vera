@@ -14,32 +14,36 @@ using namespace std;
 
 class Dialog {
 protected:
-	SDL_Surface *surface;
-	SDL_Surface *background;
-	SDL_Rect pos;
-	vector<Item *> items;
+        SDL_Surface *surface;
+        SDL_Surface *background;
+        SDL_Rect pos;
+        vector<Item *> items;
 private:
-	bool default_pos;
-	bool exit;
+        bool default_pos;
+        bool exit;
 public:
-	bool loadBackground(string name);
-	void addItem(Item *item);
-	void deleteItems();
+        // Virtual destructor - subclasses (DlgOnScreenKbd) derive from Dialog
+        // and are deleted via Dialog*. Without this, the subclass destructor
+        // would not run and any subclass-specific members would leak.
+        virtual ~Dialog() = default;
+        bool loadBackground(string name);
+        void addItem(Item *item);
+        void deleteItems();
   virtual bool needsRedraw();
-	void draw();
-	SDL_Surface *getSurface();
-	void deleteSurfaceAndBackground();
-	virtual bool onMousePress(int x, int y);
-	virtual bool onMouseRelease(int x, int y);
-	virtual bool onMouseMove(int x, int y);
-	virtual bool onFingerDown(int x, int y, int finger_id);
-	virtual bool onFingerUp(int x, int y, int finger_id);
-	void setPos(SDL_Rect pos);
-	SDL_Rect *getPos();
-	void setExit(bool exit);
-	bool isExit();
-	bool isDefaultPos();
-	void setDefaultPos(bool default_pos);
+        void draw();
+        SDL_Surface *getSurface();
+        void deleteSurfaceAndBackground();
+        virtual bool onMousePress(int x, int y);
+        virtual bool onMouseRelease(int x, int y);
+        virtual bool onMouseMove(int x, int y);
+        virtual bool onFingerDown(int x, int y, int finger_id);
+        virtual bool onFingerUp(int x, int y, int finger_id);
+        void setPos(SDL_Rect pos);
+        SDL_Rect *getPos();
+        void setExit(bool exit);
+        bool isExit();
+        bool isDefaultPos();
+        void setDefaultPos(bool default_pos);
 };
 
 #endif

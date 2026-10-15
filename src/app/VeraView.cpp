@@ -49,7 +49,6 @@ double g_dRate = 30.0;
 double g_d10LastFPS[10];
 double g_dAveRate = 30.0;
 bool g_bMouseButtonDown = false;
-int g_nVideoTexture = 0;
 static double g_cdPI = 3.1415926;
 GLint g_nMatrixMode;
 
@@ -74,8 +73,6 @@ CVeraView::CVeraView() {
   m_bIgnoreNextChar = false;
   m_clockMenuScroll = 0;
   // m_pThreadLoading = 0;
-
-  m_bShowVideo = false;
 
   // omat
   exit = false;
@@ -233,9 +230,6 @@ int CVeraView::OnCreate() {
   BGame::MyAfxMessageBox(sInfo);
   BGame::MyAfxMessageBox("----------------------");
 
-  // Play with AVI videos
-  // InitVideo();
-
   // omat
   BGame::m_nDispWidth = window_width;
   BGame::m_nDispHeight = window_height;
@@ -354,137 +348,3 @@ void CVeraView::setExit() {
   exit = true;
 }
 
-// ----------------------------------------------------------------
-// Inter-block content (comments, etc.)
-// int CVeraView::OnCreate(LPCREATESTRUCT lpCreateStruct) {
-// BEGIN_VIDEO
-// // Header File For Video For Windows #pragma comment( lib, "vfw32.lib" )
-// // Search For VFW32.lib While Linking
-// FIXME
-/*AVISTREAMINFO		psi;
-// Pointer To A Structure Containing Stream Info PAVISTREAM
-pavi;
-// Handle To An Open Stream PGETFRAME			pgf;
-// Pointer To A GetFrame Object BITMAPINFOHEADER	bmih;
-// Header Information For DrawDibDraw Decoding long
-lastframe;
-// Last Frame Of The Stream int					width;
-// Video Width int					height;
-// Video Height char				*pdata;
-// Pointer To Texture Data int					mpf;
-// Will Hold Rough Milliseconds Per Frame
-HDRAWDIB hdd;
-// Handle For Our Dib HBITMAP hBitmap;
-// Handle To A Device Dependant Bitmap HDC hdc = CreateCompatibleDC(0);
-// Creates A Compatible Device Context unsigned char* data = 0;
-// Pointer To Our Resized Image
-void flipIt(void* buffer)
-// Flips The Red And Blue Bytes (256x256)
-{
-        void* b = buffer;
-// Pointer To The Buffer
-        __asm
-// Assembler Code To Follow
-        {
-                mov ecx, 256*256
-// Counter Set To Dimensions Of Our Memory Block mov ebx, b
-// Points ebx To Our Data (b) label:
-// Label Used For Looping mov al,[ebx+0]
-// Loads Value At ebx Into al mov ah,[ebx+2]
-// Loads Value At ebx+2 Into ah mov [ebx+2],al
-// Stores Value In al At ebx+2 mov [ebx+0],ah
-// Stores Value In ah At ebx
-                        add ebx,3
-// Moves Through The Data By 3 Bytes dec ecx
-// Decreases Our Loop Counter jnz label
-// If Not Zero Jump Back To Label
-        }
-}*/
-// static int g_nFramesInVideo = 0;
-/*void OpenAVI(LPCSTR szFile)
-// Opens An AVI File (szFile)
-{
-        TCHAR	title[100];
-// Will Hold The Modified Window Title
-        AVIFileInit();
-// Opens The AVIFile Library
-        // Opens The AVI Stream
-        if (AVIStreamOpenFromFile(&pavi, szFile, streamtypeVIDEO, 0, OF_READ,
-NULL) !=0)
-        {
-                // An Error Occurred Opening The Stream
-                MessageBox (HWND_DESKTOP, "Failed To Open The AVI Stream",
-"Error", MB_OK | MB_ICONEXCLAMATION); return;
-        }
-        AVIStreamInfo(pavi, &psi, sizeof(psi));
-// Reads Information About The Stream Into psi
-        width=psi.rcFrame.right-psi.rcFrame.left;
-// Width Is Right Side Of Frame Minus Left
-        height=psi.rcFrame.bottom-psi.rcFrame.top;
-// Height Is Bottom Of Frame Minus Top
-        lastframe=AVIStreamLength(pavi);
-// The Last Frame Of The Stream g_nFramesInVideo = lastframe;
-        mpf=AVIStreamSampleToTime(pavi,lastframe)/lastframe;		//
-Calculate Rough Milliseconds Per Frame
-        bmih.biSize = sizeof (BITMAPINFOHEADER);
-// Size Of The BitmapInfoHeader bmih.biPlanes = 1;
-// Bitplanes bmih.biBitCount = 24;
-// Bits Format We Want (24 Bit, 3 Bytes) bmih.biWidth = 256;
-// Width We Want (256 Pixels) bmih.biHeight = 256;
-// Height We Want (256 Pixels) bmih.biCompression = BI_RGB;
-// Requested Mode = RGB
-        hBitmap = CreateDIBSection (hdc, (BITMAPINFO*)(&bmih), DIB_RGB_COLORS,
-(void)(&data), NULL, NULL); SelectObject (hdc, hBitmap);
-// Select hBitmap Into Our Device Context (hdc)
-        pgf=AVIStreamGetFrameOpen(pavi, NULL);
-// Create The PGETFRAME	Using Our Request Mode if (pgf==NULL)
-        {
-                // An Error Occurred Opening The Frame
-                MessageBox (HWND_DESKTOP, "Failed To Open The AVI Frame",
-"Error", MB_OK | MB_ICONEXCLAMATION);
-        }
-}
-void GrabAVIFrame(int frame)
-// Grabs A Frame From The Stream
-{
-        LPBITMAPINFOHEADER lpbi;
-// Holds The Bitmap Header Information lpbi =
-(LPBITMAPINFOHEADER)AVIStreamGetFrame(pgf, frame);	// Grab Data From The
-AVI Stream pdata=(char *)lpbi+lpbi->biSize+lpbi->biClrUsed * sizeof(RGBQUAD);
-// Pointer To Data Returned By AVIStreamGetFrame
-        // Convert Data To Requested Bitmap Format
-        DrawDibDraw (hdd, hdc, 0, 0, 256, 256, lpbi, pdata, 0, 0, width, height,
-0);
-        flipIt(data);
-// Swap The Red And Blue Bytes (GL Compatability)
-        // Update The Texture
-        glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGB,
-GL_UNSIGNED_BYTE, data);
-}
-void CloseAVI(void)
-// Properly Closes The Avi File
-{
-        DeleteObject(hBitmap);
-// Delete The Device Dependant Bitmap Object DrawDibClose(hdd);
-// Closes The DrawDib Device Context AVIStreamGetFrameClose(pgf);
-// Deallocates The GetFrame Resources AVIStreamRelease(pavi);
-// Release The Stream AVIFileExit();
-// Release The File
-}*/
-// FIXME
-/*void CVeraView::InitVideo() {
-  hdd = DrawDibOpen();
-// Grab A Device Context For Our Dib OpenAVI(".\\Test3.AVI"); g_nVideoTexture =
-BTextures::LoadTexture(".\\Textures\\Test256x256.tga", false);
-}*/
-// END_VIDEO
-// int TerrainLoadThread(LPVOID pParam) {
-extern double g_dExtraAlpha;
-extern BVector g_vCenter;
-// {
-// &rectWnd) {
-// &rectWnd) {
-// CVeraView drawing
-// CVeraView message handlers
-// This is a general purpose keyboard handler for active selection list
-// This is a general purpose keyboard handler for active slider

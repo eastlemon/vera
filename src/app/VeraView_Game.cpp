@@ -42,7 +42,6 @@ extern double g_dAveRate;
 extern double g_d10LastFPS[];
 extern double g_dExtraAlpha;
 extern BVector g_vCenter;
-extern int g_nVideoTexture;
 extern bool g_bMouseButtonDown;
 extern GLint g_nMatrixMode;
 
@@ -246,11 +245,6 @@ void CVeraView::OnDrawGame() {
   m_nMenuTime +=
       m_game.GetSimulation()->Paint(m_bCreateDLs, m_bWireframe, m_bNormals);
   m_bCreateDLs = false;
-
-  // Draw video on top of car
-  if (m_bShowVideo) {
-    DrawVideo();
-  }
 
   // Scene editor stuff (active object highlight)
   if (m_game.GetSceneEditor()->IsActive()) {
@@ -772,80 +766,6 @@ void CVeraView::OnDrawGame() {
   }
 }
 
-void CVeraView::DrawVideo() {
-  static int nFrame = 0;
-  // Setup 256x256 texture
-  OpenGLHelpers::SetColorFull(0, 1, 0.5, 1);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE);
-
-  glActiveTextureARB(GL_TEXTURE0_ARB);
-  glEnable(GL_TEXTURE_2D);
-
-  // OpenGLHelpers::SwitchToTexture(0);
-  BTextures::Use(g_nVideoTexture);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  // GrabAVIFrame(nFrame);
-  // nFrame = (nFrame + 1) % g_nFramesInVideo; //FIXME
-
-  // Draw quad on top of car
-  BVector vCar =
-      g_vCenter + BGame::GetSimulation()->GetVehicle()->m_orientation.m_vUp;
-
-  BVector v1 =
-      BGame::GetSimulation()->GetVehicle()->m_orientation.m_vRight * -1.5;
-  BVector v2 =
-      BGame::GetSimulation()->GetVehicle()->m_orientation.m_vRight * -1.5 +
-      BGame::GetSimulation()->GetVehicle()->m_orientation.m_vUp * 2.0;
-  BVector v3 =
-      BGame::GetSimulation()->GetVehicle()->m_orientation.m_vRight * 1.5 +
-      BGame::GetSimulation()->GetVehicle()->m_orientation.m_vUp * 2.0;
-  BVector v4 =
-      BGame::GetSimulation()->GetVehicle()->m_orientation.m_vRight * 1.5;
-
-  glPushMatrix();
-  glTranslatef(vCar.m_dX, vCar.m_dY, vCar.m_dZ);
-
-  glBegin(GL_QUAD_STRIP);
-  for (int i = 0; i < 100; ++i) {
-    if (i % 2) {
-      OpenGLHelpers::SetColorFull(1, 1, 1, 1);
-    } else {
-      OpenGLHelpers::SetColorFull(0.5, 0.5, 0.5, 1);
-    }
-    OpenGLHelpers::SetTexCoord(0, double(i) * 0.01);
-    BVector vNew1 =
-        v1 + BGame::GetSimulation()->GetVehicle()->m_orientation.m_vUp * 2.0 *
-                 (double(i) * 0.01);
-    glVertex3f(vNew1.m_dX, vNew1.m_dY, vNew1.m_dZ);
-    OpenGLHelpers::SetTexCoord(1, double(i) * 0.01);
-    vNew1 = v4 + BGame::GetSimulation()->GetVehicle()->m_orientation.m_vUp *
-                     2.0 * (double(i) * 0.01);
-    glVertex3f(vNew1.m_dX, vNew1.m_dY, vNew1.m_dZ);
-  }
-  glEnd();
-  glPopMatrix();
-
-  /*
-  OpenGLHelpers::SetTexCoord(0, 0);
-  glVertex3f(v1.m_dX, v1.m_dY, v1.m_dZ);
-  OpenGLHelpers::SetTexCoord(0, 1);
-  glVertex3f(v2.m_dX, v2.m_dY, v2.m_dZ);
-  OpenGLHelpers::SetTexCoord(1, 1);
-  glVertex3f(v3.m_dX, v3.m_dY, v3.m_dZ);
-  OpenGLHelpers::SetTexCoord(1, 0);
-  glVertex3f(v4.m_dX, v4.m_dY, v4.m_dZ);
-  */
-
-  // cleanup
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
-}
 
 void CVeraView::CheckForFueling() {
   // Check if we need to start fueling

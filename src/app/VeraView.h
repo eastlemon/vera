@@ -20,10 +20,6 @@ using namespace std;
 
 class CVeraView {
 
-  void InitVideo();
-  void DrawVideo();
-  bool m_bShowVideo;
-
   BGame m_game;
   BMessages m_messages;
 

@@ -130,7 +130,7 @@ void SoundModule::SetSoundSpace(int nSpace) { m_nSpace = nSpace; }
 
 void SoundModule::SetOutput(int nOutput) {}
 
-int SoundModule::GetOutput() {}
+int SoundModule::GetOutput() { return 0; }
 
 void SoundModule::SetDriver(int nDriver) {}
 

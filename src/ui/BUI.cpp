@@ -8,7 +8,7 @@
 
 BTextRenderer BUI::m_textRenderer;
 BUISelectionList *BUI::m_pSelList = 0;
-void (CVeraView::*(BUI::m_pPrevKeyDownFunction))(int, int, int) = 0;
+void (CVeraView::*BUI::m_pPrevKeyDownFunction)(int, int, int) = 0;
 int BUI::m_nPrevSliderValue = 0;
 int *BUI::m_pnSliderValue = 0;
 
@@ -269,7 +269,7 @@ void BUIEdit::Setup(string sPrompt, string sValue, int nMaxLength) {
 }
 
 void BUIEdit::ProcessChar(unsigned char c) {
-  if (!((toupper(c) >= 32) && (toupper(c) <= 96) || (c == '.') || (c == '/') ||
+  if (!(((toupper(c) >= 32) && (toupper(c) <= 96)) || (c == '.') || (c == '/') ||
         //(c == VK_BACK) ||
         (c == SDLK_BACKSPACE) ||
         //(c == VK_RETURN) ||

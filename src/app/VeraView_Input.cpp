@@ -80,11 +80,15 @@ void CVeraView::OnChar(int nChar, int nRepCnt, int nFlags) {
     }
     return;
   } break;
+  default:
+    // BASIC, MOVING_OBJECT, SELECTING_*, OVERWRITE_SCENE_FILE_QUESTION
+    // - no special key handling in this dispatcher.
+    break;
   }
 
   // Check if service window processes key input
   if ((BGame::m_bService) &&
-      ((toupper(nChar) >= 32) && (toupper(nChar) <= 96) ||
+      (((toupper(nChar) >= 32) && (toupper(nChar) <= 96)) ||
        // nChar == VK_BACK ||
        nChar == SDLK_BACKSPACE ||
        // nChar == VK_RETURN)) {
@@ -472,11 +476,6 @@ void CVeraView::OnKeyDownGame(int nChar, int nRepCnt, int nFlags) {
       //   m_bNormals = !m_bNormals;
       //   m_bCreateDLs = true;
       //   break;
-      case 'v':
-      case 'V':
-        bProcessed = true;
-        m_bShowVideo = !m_bShowVideo;
-        break;
       case 'd':
       case 'D':
         bProcessed = true;
@@ -840,6 +839,10 @@ void CVeraView::OnKeyDownSceneEditor(int nChar, int nRepCnt, int nFlags) {
   case BSceneEditor::ASKING_SCENE_FILENAME:
     // OnChar() processes these
     return;
+    break;
+  default:
+    // BASIC, MOVING_OBJECT, SELECTING_*, OVERWRITE_SCENE_FILE_QUESTION
+    // - no special key handling in this dispatcher.
     break;
   }
 

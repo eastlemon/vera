@@ -76,10 +76,7 @@ void Settings::ReadSettings(BSimulation *pSimulation) {
     fgets(sLine, 1024, fp);
     sscanf(sLine, "MessageSoundVolume = %d", &nTmp);
     SoundModule::SetMessageSoundVolume(nTmp);
-    fgets(sLine, 1024, fp);
-
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "ControllerID = %d", &BGame::m_nController);
+    fgets(sLine, 1024, fp); // legacy "ControllerID = 0" line - ignored
 
     fgets(sLine, 1024, fp);
     sscanf(sLine, "KEYMAP-Left = %u", &ControllerModule::m_keymap.m_unLeft);
@@ -102,24 +99,11 @@ void Settings::ReadSettings(BSimulation *pSimulation) {
     fgets(sLine, 1024, fp);
     sscanf(sLine, "KEYMAP-Camera = %u", &ControllerModule::m_keymap.m_unCamera);
 
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiLeft.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiRight.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiAccelerate.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiReverse.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiBreak.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiJet.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiHeli.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiLift.FromString(sLine + 27);
-    fgets(sLine, 1024, fp);
-    ControllerModule::m_controllermap.m_cmiCamera.FromString(sLine + 27);
+    // Legacy CONTROLLERMAP-* lines (joystick bindings, now removed) - skip
+    // 9 lines: Left, Right, Accelerate, Reverse, Break, Jet, Heli, Lift, Camera
+    for (int i = 0; i < 9; ++i) {
+      fgets(sLine, 1024, fp);
+    }
 
     g_cbBlackAndWhite = (BGame::m_nColorMode == 0);
     switch (BGame::m_nDistantDetail) {
@@ -178,7 +162,7 @@ void Settings::WriteSettings(BSimulation *pSimulation) {
     fprintf(fp, "MessageSoundVolume = %d\n",
             SoundModule::GetMessageSoundVolume());
 
-    fprintf(fp, "ControllerID = %d\n", BGame::m_nController);
+    fprintf(fp, "ControllerID = 0\n"); // legacy - always 0 (keyboard) now
 
     fprintf(fp, "KEYMAP-Left = %u\n", ControllerModule::m_keymap.m_unLeft);
     fprintf(fp, "KEYMAP-Right = %u\n", ControllerModule::m_keymap.m_unRight);
@@ -192,38 +176,13 @@ void Settings::WriteSettings(BSimulation *pSimulation) {
     fprintf(fp, "KEYMAP-Lift = %u\n", ControllerModule::m_keymap.m_unLift);
     fprintf(fp, "KEYMAP-Camera = %u\n", ControllerModule::m_keymap.m_unCamera);
 
-    // FIXME
-    /*bool bTmp;
-    string sTmp;
-    sTmp = ControllerModule::m_controllermap.m_cmiLeft.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Left       = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiRight.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Right      = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiAccelerate.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Accelerate = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiReverse.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Reverse    = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiBreak.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Break      = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiJet.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Jet        = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiHeli.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Heli       = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiLift.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Lift       = %s\n", sTmp);
-    sTmp = ControllerModule::m_controllermap.m_cmiCamera.ToString(bTmp);
-    if(bTmp) { sTmp += " Flipped";}
-    fprintf(fp, "CONTROLLERMAP-Camera     = %s\n", sTmp);
+    // Legacy CONTROLLERMAP-* lines (joystick bindings, now removed).
+    // Write empty placeholders so old settings.dat files keep their layout.
+    for (int i = 0; i < 9; ++i) {
+      fprintf(fp, "CONTROLLERMAP-legacy = \n");
+    }
     fprintf(fp, "WaterSurface = %d\n", BGame::m_nWaterSurface);
-    fclose(fp);*/
+    fclose(fp);
   } else {
     string sTmp;
     // sTmp.Format("Cannot open %s. Settings were not saved.", m_sFilename);

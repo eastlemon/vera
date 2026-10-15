@@ -295,8 +295,8 @@ void BObject::CreateXYBoundary() {
   pos = m_boundary.AddAfter(pos, points[nYMin]);
 
   for (i = 0; i < nPoints; ++i) {
-    if (pos = m_boundary.PointIsOutside(
-            points[i])) { // pos = start point of line outside which p is
+    if ((pos = m_boundary.PointIsOutside(
+            points[i])) != 0) { // pos = start point of line outside which p is
 
       BBoundaryPoint *pNew = m_boundary.AddAfter(pos, points[i]);
 
@@ -380,8 +380,8 @@ void BObject::CreateShadowPolygon() {
   pos = m_shadow.AddAfter(pos, points[nYMin]);
 
   for (i = 0; i < nPoints; ++i) {
-    if (pos = m_shadow.PointIsOutside(
-            points[i])) { // pos = start point of line outside which p is
+    if ((pos = m_shadow.PointIsOutside(
+            points[i])) != 0) { // pos = start point of line outside which p is
 
       BBoundaryPoint *pNew = m_shadow.AddAfter(pos, points[i]);
 

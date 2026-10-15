@@ -144,10 +144,6 @@ int BGame::m_nVisualize = 255; // all on
 BUISelectionList BGame::m_listYesNo;
 BUISelectionList BGame::m_listOK;
 
-int BGame::m_nController;
-// BControllerState BGame::m_controllerstate; // Access to a controller, such as
-// a joystick or a wheel //FIXME
-
 BGame::BGame() {
 
   time_t ltime;
@@ -161,7 +157,6 @@ BGame::BGame() {
   fclose(fp);
 
   m_cmdModule.SetSim(&m_simulation);
-  m_nController = 0;        // 0 = keyboard, 1 = joystick
   m_bDisplayInfo = true;    // Show fps, speed, altitude etc.
   m_nSkyDetail = 2;         // High
   m_nDistantDetail = 2;     // High

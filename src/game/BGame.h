@@ -150,10 +150,6 @@ public:
   static BUISelectionList m_listYesNo;
   static BUISelectionList m_listOK;
 
-  static int m_nController;
-  // static BControllerState m_controllerstate; // Access to a controller, such
-  // as a joystick or a wheel
-
   enum TState { PICKUP, DELIVERY };
   static TState m_state;
 

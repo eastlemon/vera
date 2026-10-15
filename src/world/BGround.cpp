@@ -257,6 +257,11 @@ bool BGround::GroundTriangleIsOfType(int x, int y, int nSize, int nTriangle,
   }
 
   switch (gt) {
+  case GT_GROUND:
+    // GT_GROUND is the default catch-all - it never matches a specific
+    // surface test (sand/rock/water). Return false to match the previous
+    // behaviour (no case label = fall through and return false).
+    return false;
   case GT_SAND:
     return (vNormal.m_dZ < -0.5) &&
            !GroundTriangleIsOfType(x, y, nSize, nTriangle, GT_WATER);
@@ -346,6 +351,9 @@ void BGround::RenderAreaFull(int nX, int nY, int nSize, TGroundType gt) {
                    SurfaceHeightAt(x + 1, y + 1, gt));
 
         switch (gt) {
+        case GT_GROUND:
+          // Default ground - no special friction/depth override.
+          break;
         case GT_SAND:
           m_sqrHeightMapNormals[safe(y * g_cnGroundXSize + x)].m_dFriction1 =
               0.5;
@@ -424,6 +432,9 @@ void BGround::RenderAreaFull(int nX, int nY, int nSize, TGroundType gt) {
                    SurfaceHeightAt(x, y + 1, gt));
 
         switch (gt) {
+        case GT_GROUND:
+          // Default ground - no special friction/depth override.
+          break;
         case GT_SAND:
           m_sqrHeightMapNormals[safe(y * g_cnGroundXSize + x)].m_dFriction2 =
               0.5;

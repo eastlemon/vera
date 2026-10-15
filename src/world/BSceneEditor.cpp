@@ -440,6 +440,13 @@ void BSceneEditor::AdvancePhase() {
   case MOVING_OBJECT:
     m_phase = BASIC;
     break;
+  case BASIC:
+    // Already at the base state - nothing to advance from here.
+    // (AdvancePhase is called from phase-specific handlers; BASIC is the
+    //  idle state, so reaching here is a no-op.)
+    break;
+  default:
+    break;
   }
 }
 

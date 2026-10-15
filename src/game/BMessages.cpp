@@ -203,10 +203,10 @@ void BMessages::RenderLetter(BMessage *pMsg, char c, bool bInside) {
   // Draw letter parts
 
   if ((c >= 32) && (c <= 96)) {
-    c -= 32;
+    int letterIdx = c - 32;
     for (int y = 0; y < 5; ++y) {
       for (int x = 0; x < 3; ++x) {
-        switch (m_letters[c].m_cParts[y * 3 + x]) {
+        switch (m_letters[letterIdx].m_cParts[y * 3 + x]) {
         case 'O':
           glBegin(GL_POLYGON);
           if (bInside) {

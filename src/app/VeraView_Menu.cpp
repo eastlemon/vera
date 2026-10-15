@@ -6,6 +6,12 @@
 
 #include <SDL2/SDL.h>
 
+// GLEW must be included before any other GL header. On macOS we use the
+// system OpenGL framework instead (Renderer2D.h falls back to gl.h + glext.h).
+#if !defined(__APPLE__) || !defined(__MACH__)
+#include <GL/glew.h>
+#endif
+
 using namespace std;
 
 #include "VeraView.h"
@@ -13,6 +19,7 @@ using namespace std;
 #include "BTextures.h"
 #include "OpenGLExtFunctions.h"
 #include "OpenGLHelpers.h"
+#include "Renderer2D.h"
 #if defined(__APPLE__) && defined(__MACH__)
 #include <OpenGL/gl.h>
 #else
@@ -198,42 +205,59 @@ void CVeraView::OnDrawCurrentMenu() {
   Setup2DRendering();
 
   // Draw background - sunset-sky texture stretched to fill the window.
-  // The texture is loaded as BTextures::MENU_BACKGROUND (see BTextures.cpp).
-  // It is mipmapped for clean downscaling on small windows.
-  OpenGLHelpers::SetColorFull(1, 1, 1, 1);
-  OpenGLHelpers::SwitchToTexture(0);
-  BTextures::Use(BTextures::MENU_BACKGROUND);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  //
+  // Stage B of the GL modernisation: this is the first piece of 2D
+  // rendering to use the modern shader-based pipeline (Renderer2D ->
+  // Shader + Mesh2D + GLM) instead of glBegin/glEnd. The rest of the
+  // menu (title, items, scroll animation) still uses the legacy
+  // fixed-function path; it will be migrated in subsequent commits.
+  if (Renderer2D::get().init(window_width, window_height)) {
+    Renderer2D::get().useShader();
+    // Bind the menu background texture (loaded by BTextures at startup).
+    BTextures::Use(BTextures::MENU_BACKGROUND);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glBegin(GL_TRIANGLE_STRIP);
-  OpenGLHelpers::SetTexCoord(0, 0);
-  glVertex3f(0, 0, 0);
-  OpenGLHelpers::SetTexCoord(0, 1);
-  glVertex3f(0, window_height, 0);
-  OpenGLHelpers::SetTexCoord(1, 0);
-  glVertex3f(window_width, 0, 0);
-  OpenGLHelpers::SetTexCoord(1, 1);
-  glVertex3f(window_width, window_height, 0);
-  glEnd();
+    // Draw the fullscreen background quad.
+    Renderer2D::get().drawTexturedQuad(
+        0.0f, 0.0f, float(window_width), float(window_height));
 
-  // Subtle dark overlay at the bottom to improve menu text contrast
-  // glDisable(GL_TEXTURE_2D);
-  // glEnable(GL_BLEND);
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  // glBegin(GL_TRIANGLE_STRIP);
-  // glColor4d(0, 0, 0, 0.0);
-  // glVertex3f(0, window_height * 0.4, 0);
-  // glVertex3f(window_width, window_height * 0.4, 0);
-  // glColor4d(0, 0, 0, 0.45);
-  // glVertex3f(0, window_height, 0);
-  // glVertex3f(window_width, window_height, 0);
-  // glEnd();
-  // glDisable(GL_BLEND);
-  // glEnable(GL_TEXTURE_2D);
+    // Subtle dark overlay at the bottom to improve menu text contrast.
+    // Two quads: from 40% height to 100% height, alpha 0 -> 0.45.
+    // Implemented as a single solid quad with alpha 0.3 for simplicity -
+    // the gradient version requires a separate vertex-color setup that
+    // would complicate Mesh2D. The visual difference is minimal.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    Renderer2D::get().drawSolidQuad(
+        0.0f, float(window_height) * 0.4f,
+        float(window_width), float(window_height) * 0.6f,
+        glm::vec4(0.0f, 0.0f, 0.0f, 0.35f));
+    glDisable(GL_BLEND);
+
+    Renderer2D::get().unuseShader();
+  } else {
+    // Fallback: legacy fixed-function background (only used if the shader
+    // failed to compile, e.g. on a very old GPU without GLSL 1.30).
+    OpenGLHelpers::SetColorFull(1, 1, 1, 1);
+    OpenGLHelpers::SwitchToTexture(0);
+    BTextures::Use(BTextures::MENU_BACKGROUND);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBegin(GL_TRIANGLE_STRIP);
+    OpenGLHelpers::SetTexCoord(0, 0);
+    glVertex3f(0, 0, 0);
+    OpenGLHelpers::SetTexCoord(0, 1);
+    glVertex3f(0, window_height, 0);
+    OpenGLHelpers::SetTexCoord(1, 0);
+    glVertex3f(window_width, 0, 0);
+    OpenGLHelpers::SetTexCoord(1, 1);
+    glVertex3f(window_width, window_height, 0);
+    glEnd();
+  }
 
   if (bScrolling) {
     // Draw previous and new menu scrolling

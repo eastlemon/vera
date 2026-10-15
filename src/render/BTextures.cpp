@@ -32,14 +32,12 @@ void BTextures::Exit() {
 void BTextures::LoadAllInternalTextures() {
   m_nTextures = 0;
   LoadTextureFromTGA("Textures/MainGameMenu.tga", MAIN_GAME_MENU, false);
-  LoadTextureFromTGA("Textures/Flowers.tga", FLOWERS, true);
   LoadTextureFromTGA("Textures/CarTexture.tga", CAR, true);
   // LoadTextureFromTGA("Textures/Wheeldetailed.tga", WHEEL, true);
   LoadTextureFromTGA("Textures/wheeldetailed.tga", WHEEL, true);
   LoadTextureFromTGA("Textures/skydetailed.tga", SKY, true);
   LoadTextureFromTGA("Textures/groundtexture2.tga", GROUND_BASE, true);
   LoadTextureFromTGA("Textures/groundtexture2.tga", GROUND_COLOR_MAP, true);
-  LoadTextureFromTGA("Textures/43AA.tga", INTRO43AA, false);
   LoadTextureFromTGA("Textures/dashboard.tga", DASHBOARD, false);
   // LoadTextureFromTGA("Textures/compass.tga", COMPASS, false);
   LoadTextureFromTGA("Textures/COMPASS.TGA", COMPASS, false);
@@ -80,9 +78,6 @@ int BTextures::LoadTexture(string sTextureName, bool bMipmapped) {
     //} else if(sTextureName.CompareNoCase("INT_TXTR_BRICKS") == 0) {
   } else if (sTextureName.compare("INT_TXTR_BRICKS") == 0) {
     return BRICKS;
-    //} else if(sTextureName.CompareNoCase("INT_TXTR_ROCKS") == 0) {
-  } else if (sTextureName.compare("INT_TXTR_ROCKS") == 0) {
-    return ROCKS;
     //} else if(sTextureName.CompareNoCase("INT_TXTR_GROUND") == 0) {
   } else if (sTextureName.compare("INT_TXTR_GROUND") == 0) {
     return GROUND_BASE;

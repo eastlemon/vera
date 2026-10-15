@@ -1251,7 +1251,7 @@ void BVehicle::RenderWheelBlade(double dLen, double dWide, double dNarrow,
                                 double dDepthOut, double dDepthIn, int nWheel) {
   //  End profile:
   //   _______
-  //  / /   \ \
+  //  / /   |  |
   //  I I   I I
   //  I I   I I
   //  I I   I I

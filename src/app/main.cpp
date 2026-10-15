@@ -3,6 +3,13 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#if defined(__APPLE__) && defined(__MACH__)
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#else
+#include <GL/glew.h>
+#endif
+
 #include "VeraView.h"
 
 #include <iostream>
@@ -64,6 +71,18 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  // Request an OpenGL 3.3 compatibility profile context. This gives us
+  // access to modern functions (glGenVertexArrays, glCreateShader, ...)
+  // via GLEW while keeping the legacy fixed-function pipeline alive for
+  // the parts of the renderer that haven't been migrated yet.
+  //
+  // On macOS, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY is required to keep
+  // glBegin/glEnd working; without it the context would be core-profile
+  // only and the legacy renderer would crash on the first GL call.
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                      SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
@@ -74,6 +93,20 @@ int main(int argc, char **argv) {
     cout << "error creating window" << endl;
   }
   SDL_GLContext context = SDL_GL_CreateContext(window);
+
+  // Initialize GLEW to load modern GL function pointers.
+  // On macOS this is a no-op (functions are already linked), but on
+  // Linux/Windows it's required for glGenVertexArrays, glCreateShader, etc.
+  // glewExperimental is needed because some drivers don't expose 3.3+
+  // function pointers without it.
+#ifndef __APPLE__
+  glewExperimental = GL_TRUE;
+  GLenum glewErr = glewInit();
+  if (glewErr != GLEW_OK) {
+    cout << "GLEW init failed: " << glewGetErrorString(glewErr) << endl;
+    // Continue anyway - the legacy renderer doesn't need GLEW.
+  }
+#endif
 
   CVeraView Vera;
   Vera.setWindow(window);

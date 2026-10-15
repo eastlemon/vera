@@ -131,6 +131,10 @@ public:
   int          m_nGroundHits;
 
   virtual void Init() {}
+  // Virtual destructor - BVehicle derives from PPEC_Vehicle and deletes
+  // wheel array via PPEC_Wheel* (see BVehicle::DeleteAll). Without this,
+  // any future subclass destructor would not run.
+  virtual ~PPEC_Wheel() = default;
 };
 
 

@@ -14,12 +14,18 @@ shader-based pipeline (GLSL 3.3 core profile + VBO/VAO).
 | `BCamera.{h,cpp}` | Active | Camera location / orientation / mode |
 | `BTextRenderer.{h,cpp}` | Active (will need rewrite) | Glyph-atlas text rendering via `glBegin/glEnd` |
 
-## New (Stage A — added but not yet wired into the main renderer)
+## New (Stage A — shader framework foundation)
 
 | File | Description |
 |------|-------------|
 | `Shader.{h,cpp}` | GLSL shader compile/link/use helper. Loads from source string or file, caches uniform locations, exposes typed setters (`int` / `float` / `vec2/3/4` / `mat3/4`). |
 | `Mesh2D.{h,cpp}` | VBO+VAO for screen-aligned quads. Vertex layout: `pos.xy + uv.xy + color.rgba` (8 floats). 4 vertices + 6 indices. Used by Stage B (2D UI rendering). |
+
+## New (Stage B — 2D renderer, in progress)
+
+| File | Description |
+|------|-------------|
+| `Renderer2D.{h,cpp}` | Singleton that owns the 2D shader + fullscreen quad mesh. Entry point for all 2D rendering: `drawTexturedQuad(x,y,w,h)`, `drawTexturedQuadUV(...)` for sprite atlases, `drawSolidQuad(x,y,w,h,color)` for solid colors (uses an internal 1x1 white texture). Embeds the shader sources so no external `.glsl` files are needed at runtime. |
 
 ## Test shaders
 
@@ -35,7 +41,7 @@ texture is a 1x1 white pixel it acts as a solid-color shader.
 | Stage | Scope | Status |
 |-------|-------|--------|
 | **A** | Shader + Mesh2D + GLM + GLEW — foundation only, no game code changes | ✅ Done |
-| **B** | 2D rendering: menu, HUD, dialogs, dashboard, NavSat, service window | Pending |
+| **B** | 2D rendering: menu background (first), then HUD, dialogs, dashboard, NavSat, service window | 🔄 In progress — menu background migrated to Renderer2D |
 | **C** | 3D rendering: terrain, objects, vehicle, sky, water, shadows | Pending |
 | **D** | Cleanup: delete legacy `OpenGLHelpers`, `OpenGLExtFunctions`, switch to core profile | Pending |
 

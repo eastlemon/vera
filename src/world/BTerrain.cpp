@@ -580,7 +580,7 @@ BBlockRing::~BBlockRing() { RemoveAll(); }
 
 void BBlockRing::RemoveAll() {
   BTerrainBlock *pBlock;
-  while (pBlock = GetHead()) {
+  while ((pBlock = GetHead()) != nullptr) {
     Remove(pBlock);
     delete pBlock;
   }
@@ -899,7 +899,7 @@ void BTerrain::MakeTerrainValid(BVector vLocCar, BVector vLocCamera,
               ((GetCenterForRelLoc(pBlockCenter->GetCenter(), nX, nY) - vLocCar)
                    .Length() <= (cdWorldHemisphereRadius + 453.0))) {
             // Try to find block from cache
-            if (pBlock = ExistsBlockForLocation(nX, nY, &m_ringCache)) {
+            if ((pBlock = ExistsBlockForLocation(nX, nY, &m_ringCache)) != nullptr) {
               m_ringCache.Remove(pBlock);
               m_ringVisible.AddTail(pBlock);
             } else {
