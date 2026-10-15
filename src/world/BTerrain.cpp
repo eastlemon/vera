@@ -755,6 +755,18 @@ void BTerrain::SetRenderResolution(RendRes renderResolution) {
     m_nRes6 = 4;
     BGame::m_nTerrainResolution = 4;
     break;
+  case RENDER_ULTRA:
+    // Ultra: res=7 for the closest blocks (heightmap 257x257 per block,
+    // 4x the triangle count of RENDER_MAXIMUM). Distant blocks use the
+    // same res as MAXIMUM to keep the total triangle budget manageable.
+    m_nRes1 = 7;  // < 320m: 257x257 heightmap, ~131K triangles per block
+    m_nRes2 = 6;  // < 640m: 129x129
+    m_nRes3 = 6;  // < 1000m
+    m_nRes4 = 5;  // < 1600m
+    m_nRes5 = 5;  // < 2300m
+    m_nRes6 = 4;  // >= 2800m
+    BGame::m_nTerrainResolution = 6;
+    break;
   }
 }
 
@@ -1166,22 +1178,28 @@ int BTerrain::GetResBasedOnDistance(double dDistance) {
     return 6;
   }
 
+  // Ultra detail band: closest blocks get res=7 (257x257 heightmap).
+  // Only used when RENDER_ULTRA is active (m_nRes1=7); other presets
+  // have m_nRes1 <= 6 so this band returns the same as the next one.
+  if (dDistance < 320.0) {
+    return m_nRes1;  // Ultra (7) or Maximum (6) depending on preset
+  }
   if (dDistance < 640.0) {
-    return m_nRes1; // 5;
+    return m_nRes2;
   }
   if (dDistance < 1000.0) {
-    return m_nRes2; // 5;
+    return m_nRes3;
   }
   if (dDistance < 1600.0) {
-    return m_nRes3; // 4;
+    return m_nRes4;
   }
   if (dDistance < 2300.0) {
-    return m_nRes4; // 3;
+    return m_nRes5;
   }
   if (dDistance < 2800.0) {
-    return m_nRes5; // 3;
+    return m_nRes6;
   }
-  return m_nRes6; // 3;
+  return m_nRes6;
 }
 
 // void BTerrain::LoadTerrainCache(CString sFilenamePrefix) {

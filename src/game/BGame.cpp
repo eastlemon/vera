@@ -444,7 +444,7 @@ void BGame::SetupMenus() {
   m_menuSettings.m_items[3].m_sText = "Terrain Details:";
   // m_menuSettings.m_items[3].m_type = BMenuItem::TType::STRING_FROM_LIST;
   m_menuSettings.m_items[3].m_type = BMenuItem::STRING_FROM_LIST;
-  m_menuSettings.m_items[3].m_nAssocListItems = 6;
+  m_menuSettings.m_items[3].m_nAssocListItems = 7;
   m_menuSettings.m_items[3].m_sAssocListItems =
       new string[m_menuSettings.m_items[3].m_nAssocListItems];
   m_menuSettings.m_items[3].m_sAssocListItems[0] = "Minimum";
@@ -452,7 +452,8 @@ void BGame::SetupMenus() {
   m_menuSettings.m_items[3].m_sAssocListItems[2] = "Medium";
   m_menuSettings.m_items[3].m_sAssocListItems[3] = "High";
   m_menuSettings.m_items[3].m_sAssocListItems[4] = "Maximum";
-  m_menuSettings.m_items[3].m_sAssocListItems[5] = "(slow machine)";
+  m_menuSettings.m_items[3].m_sAssocListItems[5] = "Ultra";
+  m_menuSettings.m_items[3].m_sAssocListItems[6] = "(slow machine)";
   m_menuSettings.m_items[3].m_nValue = m_nTerrainResolution;
   m_menuSettings.m_items[4].m_sText = "Dust & Clouds:";
   // m_menuSettings.m_items[4].m_type = BMenuItem::TType::STRING_FROM_LIST;

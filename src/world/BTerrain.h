@@ -174,7 +174,8 @@ public:
     RENDER_LOW,
     RENDER_MEDIUM,
     RENDER_HIGH,
-    RENDER_MAXIMUM
+    RENDER_MAXIMUM,
+    RENDER_ULTRA
   };
   void SetRenderResolution(RendRes renderResolution);
   // Selects the given resolution for rendering

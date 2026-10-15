@@ -178,6 +178,10 @@ int CVeraView::OnCreate() {
     break;
   case 5:
     m_game.GetSimulation()->GetTerrain()->SetRenderResolution(
+        BTerrain::RENDER_ULTRA);
+    break;
+  case 6:
+    m_game.GetSimulation()->GetTerrain()->SetRenderResolution(
         BTerrain::RENDER_SLOW_MACHINE);
     break;
   }
