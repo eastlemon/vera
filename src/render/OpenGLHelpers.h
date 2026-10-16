@@ -25,13 +25,12 @@
 class OpenGLHelpers {
   static GLuint m_nDLTex;
 
-private:
-  static bool LoadExtensionFunctions();
-
 public:
   static bool m_bMultiTexturing;
 
   static void Init();
+
+  static bool LoadExtensionFunctions();
 
   static void SetColorFullSafe(double dRed, double dGreen, double dBlue,
                                double dAlpha);
@@ -45,10 +44,24 @@ public:
 
   static void SetDefaultLighting();
 
+  static void Triangle(BVector &p1, BVector &p2, BVector &p3);
+
+  static void TxtrTriangle(BVector &p1, double dTxtrX1, double dTxtrY1,
+                           BVector &p2, double dTxtrX2, double dTxtrY2,
+                           BVector &p3, double dTxtrX3, double dTxtrY3);
+
+  static void TxtrTriangleBare(BVector &p1, double dTxtrX1, double dTxtrY1,
+                               BVector &p2, double dTxtrX2, double dTxtrY2,
+                               BVector &p3, double dTxtrX3, double dTxtrY3);
+
   static void TriangleStrip(BVector *pvPoints, int nPoints);
 
   static void TriangleStripWithNormals(BVector *pvPoints, BVector *pvNormals,
                                        int nPoints);
+
+  static void TriangleStripTexturedX(BVector *pvPoints, int nPoints, int nOrig1,
+                                     int nOrig2, double dTXTRMin,
+                                     double dTXTRMax);
 
   static void TriangleFan(BVector *pvPoints, int nPoints);
 
@@ -57,9 +70,14 @@ public:
 
   static void Line(BVector &p1, BVector &p2);
 
+  static void Lines(BVector *pvPoints, int nPoints);
+
   static void CreateTexName(int nTexIndex, GLuint *pnTexName);
 
   static void FreeTexName(int nTexIndex, GLuint *pnTexName);
+
+  static void CreateMipMaps(GLubyte *pStart, int nWidth, int nHeight,
+                            int nComponents);
 
   static void BindMipMapTexture(int nWidth, int nHeight, int nComponents,
                                 GLenum format, GLubyte *pStart, int nTexIndex,

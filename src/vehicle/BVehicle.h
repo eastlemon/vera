@@ -211,15 +211,14 @@ public:
   BVehicle();
   virtual ~BVehicle();
 
-  void LoadVehicleFromFile(string sFilename);
-
-private:
   bool LoadWheelFromFile(string sFilename, int nWheel, BWheel *pWheel);
+
+  void LoadVehicleFromFile(string sFilename);
   void PrepareVehicle();
+  void LoadTextures();
   void InitAll();
   void DeleteAll();
 
-public:
   virtual void BodyTouchesMatterAt(BVector vCollLoc);
   virtual void WheelTouchesMatterAt(BVector vLoc, double dRadius);
   virtual double GroundHardnessAt(BVector vLoc);
@@ -231,18 +230,16 @@ public:
       double &rdThermoLoss); // [OUT] Thermodynamic loss at the collision point
 
   void Move(BVector &vRelMove);
+  BVector GetHomeLocation() { return m_vHomeLocation; }
   void Paint(int m_nPhysicsSteps);
   void DrawPropeller();
 
+  void RotateVehicleToRightOrientation();
   void PreProcessVisualization();
-
-public:
-  void ConsumeFuel(double dAmount);
-  void ConsumeKerosine(double dAmount);
-
-private:
   void PreProcessWheels();
   void RenderWheelBlade(double dLen, double dWide, double dNarrow,
                         double dWideRound, double dNarrowRound,
                         double dDepthOut, double dDepthIn, int nWheel);
+  void ConsumeFuel(double dAmount);
+  void ConsumeKerosine(double dAmount);
 };

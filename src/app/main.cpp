@@ -5,6 +5,7 @@
 
 #include "GLCompat.h"
 
+#include "Database.h"
 #include "VeraView.h"
 
 #include <iostream>
@@ -99,6 +100,13 @@ int main(int argc, char **argv) {
   }
 #endif
 
+  // Initialize the local SQLite database for settings and player progress.
+  // On first launch, this creates vera.db and imports any existing
+  // settings.dat / Player.state files. See DEVELOPMENT.md for details.
+  if (!Database::init("vera.db")) {
+    cout << "Warning: database init failed, using defaults" << endl;
+  }
+
   CVeraView Vera;
   Vera.setWindow(window);
   SDL_GetWindowSize(window, &Vera.window_width, &Vera.window_height);
@@ -108,6 +116,7 @@ int main(int argc, char **argv) {
   while (!Vera.isExit()) {
     mainLoop(&Vera);
   }
+  Database::close();
   TTF_Quit();
   SDL_GL_DeleteContext(context);
   SDL_DestroyWindow(window);

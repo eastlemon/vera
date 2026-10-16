@@ -156,6 +156,7 @@ void BVehicle::DeleteAll() {
 
 BVehicle::~BVehicle() { DeleteAll(); }
 
+void BVehicle::LoadTextures() {}
 
 void BVehicle::LoadVehicleFromFile(string sFilename) {
   DeleteAll();

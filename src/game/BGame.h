@@ -170,6 +170,7 @@ public:
   static BObject *GetCurrentClient() { return m_pClient; }
   static void SetCurrentClient(BObject *pClient);
   static BObject *GetBase() { return m_pBase; }
+  static void SetBase(BObject *pBase) { m_pBase = pBase; }
 
   static void SetupScene();
   static double GetMaxProfitFor(double dDist, double dPizzaTemp);
@@ -184,6 +185,9 @@ public:
   static unsigned ContinueSimulation();
   static void SetupMenus();
   static void UpdateSettings();
+  static void EnumerateScreenResolutions();
+  static bool FindStringFromArray(string s, string *psArray, int nItems,
+                                  int &rnIndex);
 
   static void UpdateEarthquake();
   static void UpdateWindParticles(bool bInit = false);
@@ -203,10 +207,4 @@ public:
   static void UpdateAnalyzer();
 
   static void MyAfxMessageBox(string sText, int nTmp = 0);
-
-private:
-  static void SetBase(BObject *pBase) { m_pBase = pBase; }
-  static void EnumerateScreenResolutions();
-  static bool FindStringFromArray(string s, string *psArray, int nItems,
-                                  int &rnIndex);
 };

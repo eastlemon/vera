@@ -7,7 +7,7 @@ using namespace std;
 
 #include "FileIOHelpers.h"
 
-static map<string, map<string, string>> readMapFromFile(string filename) {
+map<string, map<string, string>> FileHelpers::readMapFromFile(string filename) {
   map<string, map<string, string>> filemap;
   map<string, string> *current_section = 0;
 
@@ -80,7 +80,7 @@ static map<string, map<string, string>> readMapFromFile(string filename) {
   return filemap;
 }
 
-bool WriteMapToFile(map<string, map<string, string>> filemap,
+bool FileHelpers::WriteMapToFile(map<string, map<string, string>> filemap,
                                  string filename) {
   ofstream ini_file(filename.c_str(), ios_base::trunc);
 

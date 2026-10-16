@@ -6,7 +6,7 @@
 #
 # Dependencies (Debian/Ubuntu): libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev
 #                               libsdl2-mixer-dev libglew-dev
-#                               libglu1-mesa-dev libvorbis-dev
+#                               libglu1-mesa-dev libvorbis-dev libsqlite3-dev
 # Dependencies (macOS):         use Makefile.macos instead
 # Dependencies (Windows/MSYS2): use Makefile.macos as a template, swap
 #                               -framework OpenGL -> -lopengl32 -lglu32
@@ -15,7 +15,7 @@ CXX      ?= g++
 CXXFLAGS ?= -std=c++11 -O2 -g \
             -Wall -Wno-unused -Wno-write-strings \
             -Wno-deprecated-declarations -Wno-sign-compare
-LDFLAGS  ?= -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lGLEW -lGL -lGLU -lvorbisfile
+LDFLAGS  ?= -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lGLEW -lsqlite3 -lGL -lGLU -lvorbisfile
 
 # Source layout - see src/README.md for the rationale.
 SUBDIRS := app game world vehicle render ui ui/dialogs audio platform physics

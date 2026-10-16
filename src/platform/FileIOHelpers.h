@@ -11,6 +11,8 @@ using namespace std;
 #include "BaseClasses.h"
 
 namespace FileHelpers {
+map<string, map<string, string>> readMapFromFile(string filename);
+bool WriteMapToFile(map<string, map<string, string>> filemap, string filename);
 int WriteKeyStringToINIFile(string sSection,         // section name
                             string sKeyName,         // key name
                             string sValue,           // value to write
