@@ -1,194 +1,107 @@
-// All access settings module for all users of the game
+// Settings - reads/writes game settings via the SQLite database.
+//
+// Previously used a flat settings.dat file with line-by-line parsing.
+// Now uses Database::getSetting/setSetting which stores key-value pairs
+// in the SQLite database (vera.db). On first launch, the Database
+// migration system imports any existing settings.dat automatically.
 #include "Settings.h"
 #include "BGame.h"
 #include "BGround.h"
+#include "Database.h"
 #include "SoundModule.h"
 
-// string Settings::m_sFilename = _T(".\\settings.dat");
-string Settings::m_sFilename = "settings.dat";
-// string Settings::m_sBrowserPath = _T("c:\\program files\\internet
-// explorer\\iexplore.exe");
 #if defined(__APPLE__) && defined(__MACH__)
-string Settings::m_sBrowserPath =
-    "open"; // macOS: use `open` to launch default browser
+string Settings::m_sBrowserPath = "open";
 #elif defined(__linux__)
-string Settings::m_sBrowserPath = "xdg-open"; // Linux: use `xdg-open`
+string Settings::m_sBrowserPath = "xdg-open";
 #else
-string Settings::m_sBrowserPath =
-    "c:\\program files\\internet explorer\\iexplore.exe";
+string Settings::m_sBrowserPath = "c:\\program files\\internet explorer\\iexplore.exe";
 #endif
+
+string Settings::m_sFilename = "vera.db";  // kept for compatibility, unused
 
 extern bool g_cbBlackAndWhite;
 extern bool g_cbMipMap;
 
 void Settings::ReadSettings(BSimulation *pSimulation) {
-  /*char  sComputerName[MAX_COMPUTERNAME_LENGTH + 1];
-  DWORD dwLen = MAX_COMPUTERNAME_LENGTH + 1;
-  if(GetComputerName(sComputerName, &dwLen)) {
-    m_sFilename = ".\\";
-    m_sFilename += sComputerName;
-    m_sFilename += "settings.dat";
-  }*/
+  // Read all settings from the SQLite database.
+  // If the database isn't ready (init failed), we fall through and
+  // the game uses the defaults set in BGame's constructor.
 
-  FILE *fp;
-  // fp = fopen(m_sFilename, "r");
-  fp = fopen(m_sFilename.c_str(), "r");
-  if (fp) {
-    char sLine[1024];
-    fgets(sLine, 1024, fp);
-    /*sscanf(sLine, "ScreenRes = %d, %d, %d, %d",
-      &(BGame::m_nDispWidth),
-      &(BGame::m_nDispHeight),
-      &(BGame::m_nDispBits),
-      &(BGame::m_nDispHz));*/ //we use only desktop resolution now
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "TerrainResolution = %d", &(BGame::m_nTerrainResolution));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "DustAndClouds = %d", &(BGame::m_nDustAndClouds));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "MusicVolume = %d", &(BGame::m_nMusicVolume));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "VehicleVolume = %d", &(BGame::m_nVehicleVolume));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "Soundscape = %d", &(BGame::m_nSoundscape));
+  if (Database::isReady()) {
+    BGame::m_nTerrainResolution = Database::getSettingInt("TerrainResolution", BGame::m_nTerrainResolution);
+    BGame::m_nDustAndClouds = Database::getSettingInt("DustAndClouds", BGame::m_nDustAndClouds);
+    BGame::m_nMusicVolume = Database::getSettingInt("MusicVolume", BGame::m_nMusicVolume);
+    BGame::m_nVehicleVolume = Database::getSettingInt("VehicleVolume", BGame::m_nVehicleVolume);
+    BGame::m_nSoundscape = Database::getSettingInt("Soundscape", BGame::m_nSoundscape);
     SoundModule::SetSoundSpace(1 - BGame::m_nSoundscape);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "SkyDetail = %d", &(BGame::m_nSkyDetail));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "DistantDetail = %d", &(BGame::m_nDistantDetail));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "WaterDetail = %d", &(BGame::m_nWaterDetail));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "ColorMode = %d", &(BGame::m_nColorMode));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "ScreenFormat = %d", &(BGame::m_nScreenFormat));
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "TextureSmoothness = %d", &(BGame::m_nTextureSmoothness));
+    BGame::m_nSkyDetail = Database::getSettingInt("SkyDetail", BGame::m_nSkyDetail);
+    BGame::m_nDistantDetail = Database::getSettingInt("DistantDetail", BGame::m_nDistantDetail);
+    BGame::m_nWaterDetail = Database::getSettingInt("WaterDetail", BGame::m_nWaterDetail);
+    BGame::m_nColorMode = Database::getSettingInt("ColorMode", BGame::m_nColorMode);
+    BGame::m_nScreenFormat = Database::getSettingInt("ScreenFormat", BGame::m_nScreenFormat);
+    BGame::m_nTextureSmoothness = Database::getSettingInt("TextureSmoothness", BGame::m_nTextureSmoothness);
     g_cbMipMap = (BGame::m_nTextureSmoothness == 2);
 
-    int nTmp;
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "MenuMusicVolume = %d", &nTmp);
-    SoundModule::SetMenuMusicVolume(nTmp);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "VehicleSoundsVolume = %d", &nTmp);
-    SoundModule::SetVehicleSoundsVolume(nTmp);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "MessageSoundVolume = %d", &nTmp);
-    SoundModule::SetMessageSoundVolume(nTmp);
-    fgets(sLine, 1024, fp); // legacy "ControllerID = 0" line - ignored
+    SoundModule::SetMenuMusicVolume(Database::getSettingInt("MenuMusicVolume", 128));
+    SoundModule::SetVehicleSoundsVolume(Database::getSettingInt("VehicleSoundsVolume", 128));
+    SoundModule::SetMessageSoundVolume(Database::getSettingInt("MessageSoundVolume", 128));
 
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Left = %u", &ControllerModule::m_keymap.m_unLeft);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Right = %u", &ControllerModule::m_keymap.m_unRight);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Accelerate = %u",
-           &ControllerModule::m_keymap.m_unAccelerate);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Reverse = %u",
-           &ControllerModule::m_keymap.m_unReverse);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Break = %u", &ControllerModule::m_keymap.m_unBreak);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Jet = %u", &ControllerModule::m_keymap.m_unJet);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Heli = %u", &ControllerModule::m_keymap.m_unHeli);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Lift = %u", &ControllerModule::m_keymap.m_unLift);
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "KEYMAP-Camera = %u", &ControllerModule::m_keymap.m_unCamera);
+    ControllerModule::m_keymap.m_unLeft = Database::getSettingInt("KEYMAP-Left", ControllerModule::m_keymap.m_unLeft);
+    ControllerModule::m_keymap.m_unRight = Database::getSettingInt("KEYMAP-Right", ControllerModule::m_keymap.m_unRight);
+    ControllerModule::m_keymap.m_unAccelerate = Database::getSettingInt("KEYMAP-Accelerate", ControllerModule::m_keymap.m_unAccelerate);
+    ControllerModule::m_keymap.m_unReverse = Database::getSettingInt("KEYMAP-Reverse", ControllerModule::m_keymap.m_unReverse);
+    ControllerModule::m_keymap.m_unBreak = Database::getSettingInt("KEYMAP-Break", ControllerModule::m_keymap.m_unBreak);
+    ControllerModule::m_keymap.m_unJet = Database::getSettingInt("KEYMAP-Jet", ControllerModule::m_keymap.m_unJet);
+    ControllerModule::m_keymap.m_unHeli = Database::getSettingInt("KEYMAP-Heli", ControllerModule::m_keymap.m_unHeli);
+    ControllerModule::m_keymap.m_unLift = Database::getSettingInt("KEYMAP-Lift", ControllerModule::m_keymap.m_unLift);
+    ControllerModule::m_keymap.m_unCamera = Database::getSettingInt("KEYMAP-Camera", ControllerModule::m_keymap.m_unCamera);
 
-    // Legacy CONTROLLERMAP-* lines (joystick bindings, now removed) - skip
-    // 9 lines: Left, Right, Accelerate, Reverse, Break, Jet, Heli, Lift, Camera
-    for (int i = 0; i < 9; ++i) {
-      fgets(sLine, 1024, fp);
-    }
+    BGame::m_nWaterSurface = Database::getSettingInt("WaterSurface", BGame::m_nWaterSurface);
+  }
 
-    g_cbBlackAndWhite = (BGame::m_nColorMode == 0);
-    switch (BGame::m_nDistantDetail) {
-    case 0:
-      pSimulation->GetGround()->m_dCoarseDistance = 300;
-      break;
-    case 1:
-      pSimulation->GetGround()->m_dCoarseDistance = 600;
-      break;
-    case 2:
-      pSimulation->GetGround()->m_dCoarseDistance = 16000;
-      break;
-    }
-    fgets(sLine, 1024, fp);
-    sscanf(sLine, "WaterSurface = %d", &(BGame::m_nWaterSurface));
-    fclose(fp);
-  } else {
-    string sTmp;
-    // sTmp.Format("Cannot open %s. Using default settings.", m_sFilename);
-    sTmp.assign("Cannot open ");
-    sTmp.append(m_sFilename);
-    sTmp.append(". Using default settings.");
-    // BGame::MyAfxMessageBox(sTmp, MB_OK); //FIXME
+  g_cbBlackAndWhite = (BGame::m_nColorMode == 0);
+  switch (BGame::m_nDistantDetail) {
+  case 0:
+    pSimulation->GetGround()->m_dCoarseDistance = 300;
+    break;
+  case 1:
+    pSimulation->GetGround()->m_dCoarseDistance = 600;
+    break;
+  case 2:
+    pSimulation->GetGround()->m_dCoarseDistance = 16000;
+    break;
   }
 }
 
 void Settings::WriteSettings(BSimulation *pSimulation) {
-  /*char  sComputerName[MAX_COMPUTERNAME_LENGTH + 1];
-  DWORD dwLen = MAX_COMPUTERNAME_LENGTH + 1;
-  if(GetComputerName(sComputerName, &dwLen)) {
-    m_sFilename = ".\\";
-    m_sFilename += sComputerName;
-    m_sFilename += "settings.dat";
-  }*/
-  FILE *fp;
-  // fp = fopen(m_sFilename, "w");
-  fp = fopen(m_sFilename.c_str(), "w");
-  if (fp) {
-    fprintf(fp, "ScreenRes = %d, %d, %d, %d\n", BGame::m_nDispWidth,
-            BGame::m_nDispHeight, BGame::m_nDispBits, BGame::m_nDispHz);
-    fprintf(fp, "TerrainResolution = %d\n", BGame::m_nTerrainResolution);
-    fprintf(fp, "DustAndClouds = %d\n", BGame::m_nDustAndClouds);
-    fprintf(fp, "MusicVolume = %d\n", BGame::m_nMusicVolume);
-    fprintf(fp, "VehicleVolume = %d\n", BGame::m_nVehicleVolume);
-    fprintf(fp, "SoundSpace = %d\n", BGame::m_nSoundscape);
-    fprintf(fp, "SkyDetail = %d\n", BGame::m_nSkyDetail);
-    fprintf(fp, "DistantDetail = %d\n", BGame::m_nDistantDetail);
-    fprintf(fp, "WaterDetail = %d\n", BGame::m_nWaterDetail);
-    fprintf(fp, "ColorMode = %d\n", BGame::m_nColorMode);
-    fprintf(fp, "ScreenFormat = %d\n", BGame::m_nScreenFormat);
-    fprintf(fp, "TextureSmoothness = %d\n", BGame::m_nTextureSmoothness);
+  if (!Database::isReady()) return;
 
-    fprintf(fp, "MenuMusicVolume = %d\n", SoundModule::GetMenuMusicVolume());
-    fprintf(fp, "VehicleSoundsVolume = %d\n",
-            SoundModule::GetVehicleSoundsVolume());
-    fprintf(fp, "MessageSoundVolume = %d\n",
-            SoundModule::GetMessageSoundVolume());
+  Database::setSettingInt("TerrainResolution", BGame::m_nTerrainResolution);
+  Database::setSettingInt("DustAndClouds", BGame::m_nDustAndClouds);
+  Database::setSettingInt("MusicVolume", BGame::m_nMusicVolume);
+  Database::setSettingInt("VehicleVolume", BGame::m_nVehicleVolume);
+  Database::setSettingInt("Soundscape", BGame::m_nSoundscape);
+  Database::setSettingInt("SkyDetail", BGame::m_nSkyDetail);
+  Database::setSettingInt("DistantDetail", BGame::m_nDistantDetail);
+  Database::setSettingInt("WaterDetail", BGame::m_nWaterDetail);
+  Database::setSettingInt("ColorMode", BGame::m_nColorMode);
+  Database::setSettingInt("ScreenFormat", BGame::m_nScreenFormat);
+  Database::setSettingInt("TextureSmoothness", BGame::m_nTextureSmoothness);
 
-    fprintf(fp, "ControllerID = 0\n"); // legacy - always 0 (keyboard) now
+  Database::setSettingInt("MenuMusicVolume", SoundModule::GetMenuMusicVolume());
+  Database::setSettingInt("VehicleSoundsVolume", SoundModule::GetVehicleSoundsVolume());
+  Database::setSettingInt("MessageSoundVolume", SoundModule::GetMessageSoundVolume());
 
-    fprintf(fp, "KEYMAP-Left = %u\n", ControllerModule::m_keymap.m_unLeft);
-    fprintf(fp, "KEYMAP-Right = %u\n", ControllerModule::m_keymap.m_unRight);
-    fprintf(fp, "KEYMAP-Accelerate = %u\n",
-            ControllerModule::m_keymap.m_unAccelerate);
-    fprintf(fp, "KEYMAP-Reverse = %u\n",
-            ControllerModule::m_keymap.m_unReverse);
-    fprintf(fp, "KEYMAP-Break = %u\n", ControllerModule::m_keymap.m_unBreak);
-    fprintf(fp, "KEYMAP-Jet = %u\n", ControllerModule::m_keymap.m_unJet);
-    fprintf(fp, "KEYMAP-Heli = %u\n", ControllerModule::m_keymap.m_unHeli);
-    fprintf(fp, "KEYMAP-Lift = %u\n", ControllerModule::m_keymap.m_unLift);
-    fprintf(fp, "KEYMAP-Camera = %u\n", ControllerModule::m_keymap.m_unCamera);
+  Database::setSettingInt("KEYMAP-Left", ControllerModule::m_keymap.m_unLeft);
+  Database::setSettingInt("KEYMAP-Right", ControllerModule::m_keymap.m_unRight);
+  Database::setSettingInt("KEYMAP-Accelerate", ControllerModule::m_keymap.m_unAccelerate);
+  Database::setSettingInt("KEYMAP-Reverse", ControllerModule::m_keymap.m_unReverse);
+  Database::setSettingInt("KEYMAP-Break", ControllerModule::m_keymap.m_unBreak);
+  Database::setSettingInt("KEYMAP-Jet", ControllerModule::m_keymap.m_unJet);
+  Database::setSettingInt("KEYMAP-Heli", ControllerModule::m_keymap.m_unHeli);
+  Database::setSettingInt("KEYMAP-Lift", ControllerModule::m_keymap.m_unLift);
+  Database::setSettingInt("KEYMAP-Camera", ControllerModule::m_keymap.m_unCamera);
 
-    // Legacy CONTROLLERMAP-* lines (joystick bindings, now removed).
-    // Write empty placeholders so old settings.dat files keep their layout.
-    for (int i = 0; i < 9; ++i) {
-      fprintf(fp, "CONTROLLERMAP-legacy = \n");
-    }
-    fprintf(fp, "WaterSurface = %d\n", BGame::m_nWaterSurface);
-    fclose(fp);
-  } else {
-    string sTmp;
-    // sTmp.Format("Cannot open %s. Settings were not saved.", m_sFilename);
-    sTmp.assign("Cannot open ");
-    sTmp.append(m_sFilename);
-    sTmp.append(". Using default settings.");
-    // BGame::MyAfxMessageBox(sTmp);
-  }
+  Database::setSettingInt("WaterSurface", BGame::m_nWaterSurface);
 }
