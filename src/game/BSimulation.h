@@ -71,7 +71,6 @@ public:
   BTrackingTarget *m_targets;
 
 private:
-  FILE *m_fp;
 
   void ApplyGroundEffectToAPoint(int i, BVector &vNormal, double depth,
                                  double dGroundFriction, double dBaseDepth);
@@ -116,8 +115,6 @@ public:
   BTerrain *GetTerrain() { return &m_terrain; }
   BScene *GetScene() { return &m_scene; }
 
-  void StartRecording();
-  void StopRecording();
 
   // void PrePaint(CDC *pDC);
   void PrePaint();
@@ -173,8 +170,6 @@ public:
   double PointUnderGroundShadow(BVector vPoint, BVector &rvNormal);
   double PointUnderObjectsShadow(double &rdCandidate, BVector &rvPoint,
                                  BVector &rvNormal, bool &rbChanged);
-  double Friction(BBodyPoint &rPoint);
-  double Friction(BVector &rPoint);
   double GroundHardnessAt(BVector &rvLocation);
 
   void AddTrackingTarget(string sId, BVector vLoc, double dRed, double dGreen,

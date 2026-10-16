@@ -48,7 +48,6 @@ BSimulation::BSimulation() {
   m_dPropThrustFactor = g_cdPropThrustFactor;
   m_bRecordTrail = false;
   m_bRaining = false;
-  m_fp = 0;
   m_nPhysicsStepsBetweenRender = 10;
   m_dPhysicsFraction = 0.0;
   m_bSteeringAidOn = true;
@@ -2039,14 +2038,6 @@ double BSimulation::PointUnderObjectsShadow(double &rdCandidate,
   }
 }
 
-double BSimulation::Friction(BVector &rPoint) {
-  return 0.5; // NOT READY Use correct ground friction!
-}
-
-double BSimulation::Friction(BBodyPoint &rPoint) {
-  return rPoint.m_dFriction * 0.5; // NOT READY Use correct ground friction!
-}
-
 // CAMERA SETUP
 
 extern double g_dRate;
@@ -3025,15 +3016,6 @@ void BSimulation::RemoveTrackingTarget(string sId) {
     pPrev = p;
     p = p->m_pNext;
   }
-}
-
-// RECORDING
-
-void BSimulation::StartRecording() { m_fp = fopen("sound.txt", "w"); }
-
-void BSimulation::StopRecording() {
-  fclose(m_fp);
-  m_fp = 0;
 }
 
 // Old wheel simulation with basepoints 1 and 2.

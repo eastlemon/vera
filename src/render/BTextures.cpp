@@ -54,8 +54,6 @@ void BTextures::LoadAllInternalTextures() {
                      QUICK_HELP_SCENE_EDITOR, false);
   LoadTextureFromTGA("Textures/WaterSurface.tga", WATER, true);
   LoadTextureFromTGA("Textures/GasStation.tga", GASSTATION, true);
-  LoadTextureFromTGA("Textures/Bricks.tga", BRICKS, true);
-  LoadTextureFromTGA("Textures/MenuTitles.tga", MENU_TITLES, false);
   LoadTextureFromTGA("Textures/MenuBackground.tga", MENU_BACKGROUND, true);
   LoadTextureFromTGA("Textures/Fueling.tga", FUELING, false);
   m_nTextures = USER_BASE;
@@ -76,8 +74,6 @@ int BTextures::LoadTexture(string sTextureName, bool bMipmapped) {
   } else if (sTextureName.compare("INT_TXTR_CHROME") == 0) {
     return ENVMAP;
     //} else if(sTextureName.CompareNoCase("INT_TXTR_BRICKS") == 0) {
-  } else if (sTextureName.compare("INT_TXTR_BRICKS") == 0) {
-    return BRICKS;
     //} else if(sTextureName.CompareNoCase("INT_TXTR_GROUND") == 0) {
   } else if (sTextureName.compare("INT_TXTR_GROUND") == 0) {
     return GROUND_BASE;

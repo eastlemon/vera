@@ -166,40 +166,6 @@ void OpenGLHelpers::SetDefaultLighting() {
   glLightfv(GL_LIGHT0, GL_SPECULAR, fLight1SpecularG);
 }
 
-void OpenGLHelpers::Triangle(BVector &p1, BVector &p2, BVector &p3) {
-  glBegin(GL_TRIANGLES);
-  glVertex3f(p1.m_dX, p1.m_dY, p1.m_dZ);
-  glVertex3f(p2.m_dX, p2.m_dY, p2.m_dZ);
-  glVertex3f(p3.m_dX, p3.m_dY, p3.m_dZ);
-  glEnd();
-}
-
-void OpenGLHelpers::TxtrTriangleBare(BVector &p1, double dTxtrX1,
-                                     double dTxtrY1, BVector &p2,
-                                     double dTxtrX2, double dTxtrY2,
-                                     BVector &p3, double dTxtrX3,
-                                     double dTxtrY3) {
-  glTexCoord2f(dTxtrX1, dTxtrY1);
-  glVertex3f(p1.m_dX, p1.m_dY, p1.m_dZ);
-  glTexCoord2f(dTxtrX2, dTxtrY2);
-  glVertex3f(p2.m_dX, p2.m_dY, p2.m_dZ);
-  glTexCoord2f(dTxtrX3, dTxtrY3);
-  glVertex3f(p3.m_dX, p3.m_dY, p3.m_dZ);
-}
-
-void OpenGLHelpers::TxtrTriangle(BVector &p1, double dTxtrX1, double dTxtrY1,
-                                 BVector &p2, double dTxtrX2, double dTxtrY2,
-                                 BVector &p3, double dTxtrX3, double dTxtrY3) {
-  glBegin(GL_TRIANGLES);
-  glTexCoord2f(dTxtrX1, dTxtrY1);
-  glVertex3f(p1.m_dX, p1.m_dY, p1.m_dZ);
-  glTexCoord2f(dTxtrX2, dTxtrY2);
-  glVertex3f(p2.m_dX, p2.m_dY, p2.m_dZ);
-  glTexCoord2f(dTxtrX3, dTxtrY3);
-  glVertex3f(p3.m_dX, p3.m_dY, p3.m_dZ);
-  glEnd();
-}
-
 void OpenGLHelpers::TriangleStrip(BVector *pvPoints, int nPoints) {
   glBegin(GL_TRIANGLE_STRIP);
   for (int i = 0; i < nPoints; ++i) {
@@ -216,22 +182,6 @@ void OpenGLHelpers::TriangleStripWithNormals(BVector *pvPoints,
       glNormal3f(pvNormals[i / 2].m_dX, pvNormals[i / 2].m_dY,
                  pvNormals[i / 2].m_dZ);
     }
-    glVertex3f(pvPoints[i].m_dX, pvPoints[i].m_dY, pvPoints[i].m_dZ);
-  }
-  glEnd();
-}
-
-void OpenGLHelpers::TriangleStripTexturedX(BVector *pvPoints, int nPoints,
-                                           int nOrig1, int nOrig2,
-                                           double dTXTRMin, double dTXTRMax) {
-  double dOffset1, dFactor, dOffset2;
-  dOffset1 = pvPoints[nOrig1].m_dY;
-  dOffset2 = pvPoints[nOrig1].m_dZ;
-  dFactor = fabs(pvPoints[nOrig1].m_dY - pvPoints[nOrig2].m_dY);
-  glBegin(GL_TRIANGLE_STRIP);
-  for (int i = 0; i < nPoints; ++i) {
-    glTexCoord2f((pvPoints[i].m_dY - dOffset1) * dFactor,
-                 (pvPoints[i].m_dZ - dOffset2) * dFactor);
     glVertex3f(pvPoints[i].m_dX, pvPoints[i].m_dY, pvPoints[i].m_dZ);
   }
   glEnd();
@@ -260,19 +210,6 @@ void OpenGLHelpers::Line(BVector &p1, BVector &p2) {
   glVertex3f(p1.m_dX, p1.m_dY, p1.m_dZ);
   glVertex3f(p2.m_dX, p2.m_dY, p2.m_dZ);
   glEnd();
-}
-
-void OpenGLHelpers::Lines(BVector *pvPoints, int nPoints) {
-  glBegin(GL_LINES);
-  for (int i = 0; i < nPoints; ++i) {
-    glVertex3f(pvPoints[i].m_dX, pvPoints[i].m_dY, pvPoints[i].m_dZ);
-  }
-  glEnd();
-}
-
-void OpenGLHelpers::CreateMipMaps(GLubyte *pStart, int nWidth, int nHeight,
-                                  int nComponents) {
-  return; // This is now obsolete
 }
 
 bool g_nBoundTextures[100] = {
